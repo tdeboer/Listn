@@ -2,8 +2,6 @@
 	session_start();
 	require_once 'config.php';
 	
-	//TODO get user id from backend (here) and strip it from js
-	
 	
 	switch ($_POST['request'])
 	{
@@ -32,6 +30,7 @@
 		
 	case "get_playlist":
 		//TODO: check if current user is allowed to see this playlist OR should it only be limited in actions?
+		//TODO: when one file is added by a deleted user, all usernames are empty
 		$playlist = $_POST['pl'];
 		if ( isset($_SESSION['logged_id']) && $_SESSION['logged_id'] == true )
 		{
@@ -115,7 +114,16 @@
 			{
 				$user_id = '';
 			}
-			$songs[] = array("id"=>$file['uid'], "index"=>$file['index'], "file"=>$file['file_id'], "title"=>$file['file_name'], "image"=>$file['image'], "duration"=>$file['duration'], "user"=>$user_id);
+			$songs[] = array(
+						"id"=>$file['uid'],
+						"index"=>$file['index'],
+						"file"=>$file['file_id'],
+						"title"=>$file['file_name'],
+						"image"=>$file['image'],
+						"duration"=>$file['duration'],
+						"date"=>$file['date'],
+						"user"=>$user_id
+					);
 		}
 		
 		$response['authenticated'] = true;
@@ -149,7 +157,7 @@
 				die('Error2: ' . mysql_error() . $a . "<br />" . $id);
 			}
 			
-			$sql3 = mysql_query("SELECT username FROM users WHERE uid='$id' ");
+			$sql3 = mysql_query("SELECT * FROM users WHERE uid='$id' ");
 			
 			if (!$sql3)
 			{
@@ -159,9 +167,18 @@
 			while($u = mysql_fetch_array($sql3))
 			{
 				$id_name = $u['username'];
+				$response['token'] = $u['user_token'];
+			}
+			
+			$sql4 = mysql_query("SELECT * FROM playlists WHERE uid='$a' ");
+			if (!$sql4) die('Error4: ' . mysql_error());
+			
+			while($pl = mysql_fetch_array($sql4))
+			{
+				$response['event'] = $pl['event_id'];
 			}
 			  
-			$object[] = array("title"=>$c, "file"=>$d, "image"=>$e, "dur"=>$f, "user"=>$id_name);
+			$object[] = array("title"=>$c, "file"=>$d, "image"=>$e, "dur"=>$f, "user"=>$id_name, "date"=>time());
 			$response['authenticated'] = true;
 			$response['object'] = $object;
 			mysql_close($con);
@@ -241,7 +258,7 @@
 		$songs = array();
 		while($file = mysql_fetch_array($sql))
 		{
-			$songs[] = array("id"=>$file['uid'], "index"=>$file['index'], "file"=>$file['file_id'], "title"=>$file['file_name'], "image"=>$file['image'], "duration"=>$file['duration'], "user"=>"new");
+			$songs[] = array("id"=>$file['uid'], "index"=>$file['index'], "file"=>$file['file_id'], "title"=>$file['file_name'], "image"=>$file['image'], "duration"=>$file['duration'], "date"=>$file['date'], "user"=>"new");
 		}
 		
 		$sql2 = mysql_query("SELECT * FROM playlists WHERE uid='$playlist' ");
@@ -343,15 +360,132 @@
 		break;
 		
 	case "store_user":
-		// TODO
 		$response['authenticated'] = true;
 		$fbid = $_POST['fbid'];
 		$access_token = $_POST['access_token'];
+		$email = $_POST['email'];
+		$name = $_POST['name'];
 		
-		$sql1 = mysql_query("INSERT INTO users(user_token, fbid) VALUES ('$access_token', '$fbid') ON DUPLICATE KEY UPDATE fbid=fbid");
+		$sql1 = mysql_query("SELECT `uid` FROM users WHERE fbid=$fbid");
 		if (!$sql1)
 		{
 			die('Error1: ' . mysql_error());
+		}
+		
+		if (mysql_num_rows($sql1))
+		{
+			// facebook user is known, update the datestamp
+			$sql2 = mysql_query("UPDATE users SET log=NOW(), user_token='$access_token' WHERE fbid=$fbid");
+			if (!$sql2)
+			{
+				die('Error2: ' . mysql_error());
+			}
+			
+			while($user = mysql_fetch_array($sql1))
+			{
+				$_SESSION['user_id'] = $user['uid'];
+				$_SESSION['logged_id'] = true;
+			}
+		} else {
+			// facebook user is unknown, add to users table
+			$sql3 = mysql_query("INSERT INTO users(user_token, fbid, email, username, log) VALUES ('$access_token', '$fbid', '$email', '$name', NOW())");
+			if (!$sql3)
+			{
+				die('Error3: ' . mysql_error());
+			}
+
+			$_SESSION['user_id'] = mysql_insert_id();
+			$_SESSION['logged_id'] = true;
+			$response['new_user'] = true;
+		}
+		
+		$response['user_id'] = $_SESSION['user_id'];
+		echo json_encode($response);
+		break;
+	
+	case "update_user":
+		$uid = $_POST['user_id'];
+		$email = $_POST['email'];
+		$name = $_POST['name'];
+		
+		$sql1 = mysql_query("UPDATE users SET username='$name', email='$email' WHERE uid=$uid");
+		if (!$sql1)
+		{
+			die('Error: ' . mysql_error());
+		}
+			
+		echo json_encode($response);
+		break;
+		
+	case "connect_event":
+		$response['authenticated'] = false;
+		if ( isset($_SESSION['logged_id']) && $_SESSION['logged_id'] == true )
+		{
+			$event_id = $_POST['eventId'];
+			$playlist = $_POST['pl_id'];
+			
+			$sql3 = mysql_query("SELECT * FROM playlists WHERE uid=$playlist");
+			if (!$sql3)
+			{
+				die('Error3: ' . mysql_error());
+			}
+			
+			while($playlist = mysql_fetch_array($sql3))
+			{
+				$response['title'] = $playlist['title'];
+				$admin = $playlist['admin_id'];
+			}
+			
+			if ($admin != $_SESSION['user_id']) {
+				$response['reason'] = "not admin";	
+			}
+			else 
+			{
+				$response['authenticated'] = true;	
+				
+				$sql1 = mysql_query("UPDATE playlists SET event_id='$event_id' WHERE uid='$playlist' ");
+				if (!$sql1)
+				{
+					die('Error1: ' . mysql_error());
+				}
+			
+				$user = $_SESSION['user_id'];
+				$sql2 = mysql_query("SELECT * FROM users WHERE uid=$user");
+				if (!$sql2)
+				{
+					die('Error2: ' . mysql_error());
+				}
+				
+				while($user = mysql_fetch_array($sql2))
+				{
+					$response['user'] = $user['username'];
+					$response['fbid'] = $user['fbid'];
+					$response['user_token'] = $user['user_token'];
+				}
+			}
+			
+			
+		}
+		
+		echo json_encode($response);
+		break;
+		
+	case "settings":
+		$playlist = $_POST['id'];
+		$sql1 = mysql_query("SELECT * FROM playlists WHERE uid='$playlist'");
+			
+		if (!$sql1)	
+		{
+			die('Error: ' . mysql_error());
+		}
+		
+		while($pl = mysql_fetch_array($sql1))
+		{
+			$response['public'] = $pl['public'];
+			$response['admin'] = $pl['admin_id'];
+			$response['time'] = $pl['date'];
+			$response['title'] = $pl['title'];
+			$response['event_id'] = $pl['event_id'];
 		}
 		
 		echo json_encode($response);

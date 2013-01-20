@@ -1,6 +1,13 @@
 /* TODO:
- * OOP approach: playlist is object with options
- * Make dialog flexible with simple templating system with php (require oid) and make it a sidebar that slides in
+ * OOP approach: playlist is object with options ( * Gather vars in one object. Functions > methods also?)
+ * Make dialog flexible with simple templating system with php (require oid)
+ * Make seperate js file for home
+ * Make delete function
+ * - bug when adding files together
+- no facebook login plugin in safari
+- check for updates earlier than on the switch
+ * username is not visible
+ * 
  */
 
 var playlist_id;
@@ -17,45 +24,101 @@ var needle = 0;
 var stopScrubber = false;
 var done;
 var intervalScrubber;
+var dialogVisible = false;
+var currentDialog;
+var ytplayer;
+var repeat;
+var checkedUpdates = false;
+var pl_width,pl_height,pl_scroll,pl_scroll2;
+
+var settings = {
+	autoplay: 1
+}
 
 
 /*
  * Youtube API
  */
 function playYT() {
-	/* use player.loadVideoById */
-	console.log("now playing: " + playlist[needle]);
-	$('#myytplayer').remove();
-	intervalScrubber = clearInterval(intervalScrubber);
-	$('#player > .padding').append('<div id="ytapiplayer" style="float:right"></div>');
-	swfobject.embedSWF("http://www.youtube.com/e/" + playlist[needle] + "?enablejsapi=1&playerapiid=ytplayer&autoplay=1&controls=0&rel=0&showinfo=0", "ytapiplayer", "425", "356", "8", null, null, params, atts);
-	done = false;
-	$( ".item.highlight" ).removeClass("highlight");
-	$( ".item:eq(" + needle + ")" ).addClass("highlight");
-	$('#playButton').children("i").removeClass('icon-play');
-	$('#playButton').children("i").addClass('icon-pause');
+	if (needle < playlist.length) {
+		console.log("Now playing: " + playlist[needle]);
+		intervalScrubber = clearInterval(intervalScrubber);
+		if (ytplayer) {
+			ytplayer.loadVideoById( playlist[needle] );
+		} else {
+			console.log('Error: Youtube api not loaded!');
+			setTimeout(
+				function() { 
+					//ytplayer.loadVideoById( playlist[needle] );
+					onYouTubeIframeAPIReady();
+				},
+				500
+			);
+		}
+		
+		done = false;
+		$( ".item.highlight" ).removeClass("highlight");
+		$( ".item:eq(" + needle + ")" ).addClass("highlight");
+		$('#playButton').children("i").removeClass('icon-play');
+		$('#playButton').children("i").addClass('icon-pause');
+	} else if (repeat) {
+		needle = 0;
+		playYT();
+	}
+}
+
+function onYouTubeIframeAPIReady() {console.log('iFrame ready');
+	//todo: stop autoplay for Modernizr.touch
+	ytplayer = new YT.Player('player', {
+		width: 425,
+		height: 356,
+		playerVars: {
+			'autoplay': 0,
+			'controls': 0,
+			'rel': 0,
+			'showinfo': 0,
+			'enablejsapi': 1,
+			'modestbranding': 1,
+			'origin': 'http://www.bitesizedchunks.nl/',
+			'wmode': 'opaque'
+		},
+		events: {
+			'onReady': onPlayerReady,
+			'onError': onytplayerError,
+			'onStateChange': onytplayerStateChange
+		}
+    });
+}
+
+function onPlayerReady() {console.log('onreadycalled');
+	if (playlist.length > 0) {
+		playYT();
+	}
 }
 
 function onYouTubePlayerReady(playerId) {
-	ytplayer = document.getElementById("myytplayer");
-	ytplayer.addEventListener("onStateChange", "onytplayerStateChange");
-	ytplayer.addEventListener("onError", "onytplayerError");
+	console.log('Still used 3########');
+	/*
+		ytplayer = document.getElementById("myytplayer");
+		ytplayer.addEventListener("onStateChange", "onytplayerStateChange");
+		ytplayer.addEventListener("onError", "onytplayerError");
+	*/
 } 
 
 function onytplayerStateChange(event) {
-	playerState = event;
-	console.log('event: ' + event);
-	if (event == 1) {
+	playerState = event.data;
+	console.log('Event: ' + event.data);
+	if (event.data == 1) {
 		intervalScrubber = clearInterval(intervalScrubber);
 		intervalScrubber = setInterval("updateScrubber()", 200);
 		$( "#slider-range-min" ).slider({ max: ytplayer.getDuration()*10 });
-	} else if (event == 2) {
+	} else if (event.data == 2) {
 		intervalScrubber = clearInterval(intervalScrubber);
-	} else if (event == 0 && !done) {
+	} else if (event.data == 0 && !done) {
 		intervalScrubber = clearInterval(intervalScrubber);
 		done = true;
 		needle++;
-		checkUpdates();
+		checkUpdates(true);
 	}
 }
 
@@ -66,15 +129,15 @@ function onytplayerError(error) {
 		intervalScrubber = clearInterval(intervalScrubber);
 		done = true;
 		$(".item:eq(" + needle + ") > .icon-exclamation-sign").show();
-		needle++;
-		checkUpdates();
+		if(playlist.length >= 1) needle++;
+		checkUpdates(true);
 	}
 }
 
 
 
 function updateScrubber() {
-	var pass = ytplayer.getPlayerState( );
+	var pass = ytplayer.getPlayerState();
 	if (pass == 1) {
 		var duration = ytplayer.getDuration( );
 		var durationMinutes = Math.floor( duration/60 );
@@ -88,6 +151,10 @@ function updateScrubber() {
 		}
 		$('#marker-time').text(currentMinutes + ':' + currentSeconds);
 		$('#total-time').text(durationMinutes + ':' + durationSeconds);
+		if (current >= 60 && !checkedUpdates) {
+			checkUpdates(false);
+			checkedUpdates = true;
+		}
 	}
 };
 
@@ -96,7 +163,7 @@ function updateScrubber() {
 /*
  * Pubsub (faking)
  */
-function checkUpdates() {
+function checkUpdates(betweenSongs) {
 	var hiddenTimestamp = $('#hidden-timestamp').val();
 	var playlist_id = $('#hidden-pl').val();
 	$.post("requests.php", {
@@ -106,19 +173,21 @@ function checkUpdates() {
 		function (data) 
 		{
 			console.log("Current:" + hiddenTimestamp + " Update: " + data);
-			if( data == hiddenTimestamp ) {
-				console.log('no new files');
-				playYT(); // extra check if there is something to play?
+			if (data == hiddenTimestamp || hiddenTimestamp.length == 0) {
+				console.log('No new files');
+				if (betweenSongs) {
+					playYT(); // TODO: extra check if there is something to play?
+					checkedUpdates = false;
+				}
 			} else {
 				// get the new files
-				getUpdates(hiddenTimestamp, playlist_id);
+				getUpdates(hiddenTimestamp, playlist_id, betweenSongs);
 			}
 		},
 		"json");
 }
 
-function getUpdates(hiddenTimestamp, playlist_id) {
-	// TODO: make default value of date current timestamp
+function getUpdates(hiddenTimestamp, playlist_id, betweenSongs) {
 	$.post("requests.php", {
 		request: "get_update",
 		pl_id: playlist_id,
@@ -134,21 +203,27 @@ function getUpdates(hiddenTimestamp, playlist_id) {
 				var image = data.posts[i].image;
 				var dur = data.posts[i].duration;
 				var contributor = data.posts[i].user;
-				$('#userPlaylist').append( itemBlock(title, file, image, dur, contributor) );
+				var date = data.posts[i].date;
+				$('#userPlaylist').append( itemBlock(title, file, image, dur, contributor, date ) );
 			}
 			
 			$('#hidden-timestamp').val(data.timestamp);
-			$.fn.lol(); 
-			//TODO: inside onready scope
-			playYT(); // extra check if there is something to play?
+			//$.fn.lol();  //bug: breaks
+			// Update plugins
+			pl_scroll.tinyscrollbar_update();
+			$("abbr.timeago").timeago();
+			
+			if (betweenSongs) {
+				//TODO: inside onready scope
+				playYT(); // TODO: extra check if there is something to play?
+			}
 		},
 		"json");
 }
 
 
 
-function itemBlock(title, file, image, duration, contributor) {
-	//console.log(image);
+function itemBlock(title, file, image, duration, contributor, date) {
 	var itemMinutes = Math.floor( duration/60 );
 	var itemSeconds = Math.ceil( duration%60 ) <  10 ? "0" + Math.ceil( duration%60 ) : Math.ceil( duration%60 );
 	var itemDur = itemMinutes + ':' + itemSeconds;
@@ -158,22 +233,59 @@ function itemBlock(title, file, image, duration, contributor) {
 	} else {
 		imageElement = '';
 	}
-	return '<li class="item" id="' + file + '"><div class="image">' + imageElement + '</div><div class="text"><div class="dur">' + itemDur + '</div><div class="title">' + title + '</div><div class="comment">Added by ' + contributor + '</div></div><i class="icon-exclamation-sign" alt="Skipped"></i></li>';
+	return '<li class="item" id="' + file + '"><div class="image">' + imageElement + '</div><div class="text"><div class="dur">' + itemDur + '</div><div class="title">' + title + '</div><div class="comment">Added by ' + contributor + ' <abbr class="timeago" title="' + date + '">' + date + '</abbr></div></div><i class="icon-exclamation-sign" alt="Skipped"></i></li>';
 }
 
+
+function initScrollBar() {
+	pl_width = $('#playlist').width();
+    $('#scrollbar1').width(pl_width-6);
+    $('#scrollbar1 > .viewport').width(pl_width-19);
+    pl_height = $('#playlist').height();
+    $('#scrollbar1 > .viewport').height(pl_height-12);
+    pl_scroll = $('#scrollbar1');
+    pl_scroll.tinyscrollbar({ invertscroll: true });
+    pl_scroll2 = $('#scrollbar2');
+    pl_scroll2.tinyscrollbar({ invertscroll: true });
+    
+    $(window).resize(function() {
+		pl_width = $('#playlist').width();
+		$('#scrollbar1').width(pl_width-6);
+		$('#scrollbar1 > .viewport').width(pl_width-19);
+		pl_height = $('#playlist').height();
+		$('#scrollbar1 > .viewport').height(pl_height-12);
+		pl_scroll.tinyscrollbar_update();
+	});
+}
 
 
 
   
 $(document).ready (function() {
+	throbber($('.overview'), 'show');
 	
-	lol = function()
+	/*
+lol = function()
 	{
+		console.log('####lol function is used!####');
 		pl_scroll.tinyscrollbar_update();
 	};
+*/
+	
+	function throbber(parent, toggle) {
+		if (toggle == 'hide') {
+			parent.find('.throbber').hide();
+		} else if (toggle == 'show') {
+			parent.find('.throbber').show();
+		}
+	}
 	
 	// geo location
 	$("#placeInvite").live("click", initiate_geolocation);
+	
+	if (!Modernizr.touch){
+		initScrollBar();
+	}
 	
 	function initiate_geolocation() {  
         //navigator.geolocation.getCurrentPosition(handle_geolocation_query,handle_errors);
@@ -245,34 +357,15 @@ $(document).ready (function() {
 			ytplayer.seekTo(ui.value /10,false);
 		},
 		stop: function ( event, ui ) {
-			console.log(ui.value);
 			ytplayer.seekTo(ui.value /10,true);
 		}
 	});
     
-    var pl_width = $('#playlist').width();
-    $('#scrollbar1').width(pl_width-6);
-    $('#scrollbar1 > .viewport').width(pl_width-19);
-    var pl_height = $('#playlist').height();
-    $('#scrollbar1 > .viewport').height(pl_height-12);
-    var pl_scroll = $('#scrollbar1');
-    pl_scroll.tinyscrollbar();
-    var pl_scroll2 = $('#scrollbar2');
-    pl_scroll2.tinyscrollbar();
-    
-    $(window).resize(function() {
-		var pl_width = $('#playlist').width();
-		$('#scrollbar1').width(pl_width-6);
-		$('#scrollbar1 > .viewport').width(pl_width-19);
-		var pl_height = $('#playlist').height();
-		$('#scrollbar1 > .viewport').height(pl_height-12);
-		pl_scroll.tinyscrollbar_update();
-	});
-	
-    
+        
     //TODO: still needed?
 	if (playlist.length > 0) {
-		playYT();
+		console.log('###### Yes, still needed! ######');
+		//playYT(); //test
 	} 
 	
 	
@@ -280,7 +373,7 @@ $(document).ready (function() {
 	 * Ajax requests
 	 */
 	function addPlaylist(newTitle) {
-		// TODO: What happens when you enter an existing name?
+		// TODO: What happens when you enter an existing name? -> error
 		$.post("requests.php", {
 			request: "add_playlist",
 			title: newTitle
@@ -306,6 +399,7 @@ $(document).ready (function() {
 	
 	
 	function getPlaylist(plid) {
+		throbber($('.overview'), 'show');
 		$.post("requests.php", 
 		{
 			request : "get_playlist", 
@@ -317,6 +411,7 @@ $(document).ready (function() {
 			{
 		 		//empty playlist items
 	 			$('#userPlaylist').children().remove();
+	 			throbber( $('.overview'), 'hide' );
 	 			// TODO: stop current video
 	 			
 				var songs = data.posts;
@@ -325,19 +420,27 @@ $(document).ready (function() {
 					var file = data.posts[i].file;
 					var image = data.posts[i].image;
 					var dur = data.posts[i].duration;
+					var date = data.posts[i].date;
 					var contributor = data.posts[i].user;
-					$('#userPlaylist').append( itemBlock(title, file, image, dur, contributor) );
+					$('#userPlaylist').append( $(itemBlock(title, file, image, dur, contributor, date )).css('visibility', 'hidden') );
 				}
+				
+				// adjust scroll bar before setting items on display: none
+				if (!Modernizr.touch){
+					pl_scroll.tinyscrollbar_update();
+				}
+				$("abbr.timeago").timeago();
+				
+				$('.item').each(function(index) {
+				    $(this).delay(400*index).hide().css('visibility', 'visible').fadeIn(300);
+				});
 				
 				console.log(data.timestamp + "; " + data.playlist);
 				$('#hidden-timestamp').val(data.timestamp);
 				$('#hidden-pl').val(data.playlist);
 				
-				if (playlist.length > 0) {
-					playYT();
-				} 
-				
-				pl_scroll.tinyscrollbar_update();
+				setSettings(data.playlist);
+
 			}
 			else
 			{
@@ -350,7 +453,8 @@ $(document).ready (function() {
 		
 	function addFile(fileTitle, fileId, fileImg, fileDuration) {
 		var playlist_id = $('#hidden-pl').val();
-		//TODO bug: indexFile is -1
+		// TODO bug: indexFile is -1
+		// TODO: playlist crashes when first added file is corrupt
 		var indexFile = $.inArray(fileId, playlist);
 		$.post("requests.php",
 		{
@@ -369,8 +473,34 @@ $(document).ready (function() {
 				$('#code').val('').focus();
 				
 				var d = data.object[0];
-				$('#userPlaylist').append( itemBlock(d.title, d.file, d.image, d.dur, d.user) );
-				pl_scroll.tinyscrollbar_update();
+				$('#userPlaylist').append( $(itemBlock(d.title, d.file, d.image, d.dur, d.user, $.timeago(new Date()) )).hide().fadeIn(300) );
+				
+				setTimeout(
+					function() { 
+						pl_scroll.tinyscrollbar_update();
+					},
+					300
+				);
+				$("abbr.timeago").timeago();
+				
+				if (data.event) {
+					var message = "added '" + d.title + "' to the playlist.";
+					var url = 'https://graph.facebook.com/' + data.event + '/feed';
+					$.post(url,
+			     	{
+			     		access_token: data.token,
+			     		message: message,
+			     		link: "http://www.bitesizedchunks.nl/ytapi/list.php?id=1",
+			     		name: d.title + " on Listn.",
+			     		caption: "'Frisse start' playlist on Listn.",
+			     		description: "www.listn.nl",
+			     		picture: d.image
+			     	},
+			     	function(fbdata) {
+			     		console.log(fbdata.data);
+			     	});
+				}
+				
 				if (playlist.length == 1) {
 					playYT();
 				};
@@ -384,6 +514,7 @@ $(document).ready (function() {
 	}
 	
 	function updatePlaylist() {
+		console.log('######Dit wordt nog gebruikt!!!!!######');
 		$.post("requests.php", 
 		{
  			request: "update_playlist",
@@ -394,6 +525,24 @@ $(document).ready (function() {
 			console.log('Playlist updated');
 		}
 	)};
+	
+	
+	function setSettings(playlist_id) {
+		
+		$.post("requests.php",
+		{
+			request: "settings",
+			id: playlist_id
+		},
+		function (data) 
+		{
+			el = '#' + data.event_id;
+			$(el).attr('checked', 'checked');
+		},
+		"json");
+		
+	}
+	
 	
 	// moved from outside onready to here
 	function emailInvite(recipient) {
@@ -411,9 +560,48 @@ $(document).ready (function() {
 	}
 	
 	
+	function connectEvent(eventId) {
+		var playlist_id = $('#hidden-pl').val(); //TODO: make javascript var. As well for timestamp
+		throbber($('#facebook-dialog'), 'show');
+		$.post("requests.php", {
+			request: "connect_event",
+			pl_id: playlist_id,
+			eventId: eventId
+			},
+			function (data) 
+			{
+				if (data.authenticated)
+				{
+					var message = "created playlist '" + data.title + "' for this event!";
+					var url = 'https://graph.facebook.com/' + eventId + '/feed';
+					$.post(url,
+			     	{
+			     		access_token: data.user_token,
+			     		message: message,
+			     		link: "http://www.bitesizedchunks.nl/ytapi/list.php?id=1",
+			     		name: "Frisse start playlist on Listn.",
+			     		caption: "Build your playlist together.",
+			     		description: "www.listn.nl"
+			     	},
+			     	function(fbdata) {
+			     		console.log(fbdata.data);
+			     		throbber( $('#facebook-dialog'), 'hide' );
+			     	});
+				}
+				else
+				{
+					notAuth(data.reason);
+				}
+			},
+			"json");
+	}
+	
+	
+	
+	
 	
 	/*
-	 * Search Youtube 
+	 * Search
 	 */
 	function getYouTubeInfo(keyword) {
         $.ajax({
@@ -423,9 +611,11 @@ $(document).ready (function() {
         });
 	}
 	
-	$( ".input-prepend" ).focusout(function() {
-		//$('#results').hide();
+	/*
+$( ".input-prepend" ).focusout(function() {
+		$('#results').hide();
 	});
+*/
 	
 	$( "#code" ).autocomplete({
 	source: function( request, response ) {
@@ -460,12 +650,13 @@ $(document).ready (function() {
 			var duration = entry.media$group.yt$duration.seconds;
 			$('#search-result').append('<li class="result" id="' + idDirty + '"><img src="' + img + '" width="60" />' + title + '</li>');
 			$('#' + idDirty).data('fileData', { id: idClean, img: img, title: title, duration: duration });
-			pl_scroll2.tinyscrollbar_update();
+			if (!Modernizr.touch) {
+				pl_scroll2.tinyscrollbar_update();
+			}
 		}
 	}
 	
 	$('.result').live('click', function () {
-		console.log('clicked result');
 		var searchId = $(this).attr("id");
 		var file = $('#' + searchId).data('fileData').id;
 		var title = $('#' + searchId).data('fileData').title;
@@ -486,6 +677,10 @@ $(document).ready (function() {
 	
 	$('#nextButton').click(controlNext);
 	
+	$('#repeatButton').click(repeatToggle);
+	
+	$('#muteButton').click(muteToggle);
+	
 	$('#transitionButton, .button').mousedown(function(e) {
 		$(this).addClass("selected");
 	});
@@ -501,6 +696,7 @@ $(document).ready (function() {
 	});
 	
 	$("body").keyup(function(event) {
+		event.preventDefault();
 		if ($(event.target).is(':not(input, textarea)')) {
 			if (event.keyCode == '32') {
 				playPause();
@@ -514,6 +710,13 @@ $(document).ready (function() {
 		}
 	});
 	
+	$("#code, body").keyup(function(event) {
+		if (event.keyCode == '27') { //escape key
+			$('#results').hide();
+		}
+	});
+	
+	
 	function playPause() {
 		if( playerState == 1 ) {
 			ytplayer.pauseVideo();
@@ -523,6 +726,28 @@ $(document).ready (function() {
 			ytplayer.playVideo();
 			$('#playButton').children("i").removeClass('icon-play');
 			$('#playButton').children("i").addClass('icon-pause');
+		}
+	}
+	
+	function muteToggle() {
+		if( ytplayer.isMuted() ) {
+			ytplayer.unMute();
+			$('#muteButton').children("i").removeClass('icon-volume-off');
+			$('#muteButton').children("i").addClass('icon-volume-up');
+		} else if ( !ytplayer.isMuted() ) {
+			ytplayer.mute();
+			$('#muteButton').children("i").removeClass('icon-volume-up');
+			$('#muteButton').children("i").addClass('icon-volume-off');
+		}
+	}
+	
+	function repeatToggle() {
+		if( repeat ) {
+			repeat = false;
+			$('#repeatButton').removeClass('selected');
+		} else if ( !repeat ) {
+			repeat = true;
+			$('#repeatButton').addClass('selected');
 		}
 	}
 	
@@ -548,7 +773,15 @@ $(document).ready (function() {
 	// TODO: do this with php. e.g. require init.php
 	var idGET = $.getUrlVar('id');
 	if (typeof idGET != "undefined") {
-		getPlaylist( idGET );
+		/*
+setTimeout(
+			function() { 
+				getPlaylist(idGET);
+			},
+			5000
+		);
+*/
+		getPlaylist(idGET);
 	}
 	
 	// TODO: what happens wih the getPlaylist when you are not yet a participant?
@@ -570,8 +803,7 @@ $(document).ready (function() {
 			}
 			else
 			{
-				console.log('niet ingelogd');
-				// showDialog('logon');
+				console.log('Niet ingelogd');
 			}
 		}, 
 		"json");
@@ -580,10 +812,16 @@ $(document).ready (function() {
 	
 	
 	function notAuth(reason) {
-		if (reason == "forbidden") {
+		if (reason == "forbidden")
+		{
 			alert("This playlist is not public. Ask the admin of this playlist to invite you.");
 		}
-		else {
+		else if (reason == "not admin")
+		{
+			alert("This playlist is not public. Ask the admin of this playlist to invite you.");
+		}
+		else
+		{
 			alert("For this you'll have to login");
 			FB.login();
 		}
@@ -594,12 +832,31 @@ $(document).ready (function() {
 	/*
 	 * Dialog
 	 */
-	$('#addPlaylist').click(function(e) {
-		showDialog('new playlist');
+	$('#btn-new').click(function(e) {
+		showDialog( $('#new-dialog') );
 	});
 	
-	$('#invitePlaylist').click(function(e) {
-		showDialog('invite to playlist');
+	$('#new-confirm').click(function(e) {
+		var valueTitle = $('#titlePlaylist').val();
+		addPlaylist(valueTitle);
+	});
+	
+	$('#btn-event').click(function(e) {
+		showDialog( $('#facebook-dialog') );
+	});
+	
+	$('#facebook-confirm').click(function(e) {
+		var radioValue = $('#events-result .radio-item input:checked').val();
+		console.log(radioValue);
+		connectEvent(radioValue);
+	});
+	
+	$('#btn-invite').click(function(e) {
+		showDialog( $('#invite-dialog') );
+	});
+	
+	$('#btn-settings').click(function(e) {
+		showDialog( $('#settings-dialog') );
 	});
 	
 	$('#logout').click(function(e) {
@@ -607,7 +864,6 @@ $(document).ready (function() {
 	});
 	
 	$('#account').click(function(e) {
-		//showDialog('account');
 		$.post("requests.php", {
 			request: "destroy_session"
 			},
@@ -618,92 +874,48 @@ $(document).ready (function() {
 			"json");
 	});
 	
-	function showDialog(action) {
-		switch (action)
-		{
-		case 'logon':
-			var url = document.URL;
-			console.log("ahahahaha");
-			console.log(url);
-			setCookie("orig_page", url, 1);
+	$('.btn-hide-dialog').click(function() {
+		showDialog();
+	});
+	
+	
+	function showDialog(el) {
+		if (!dialogVisible) {
 			
-			var provider = getCookie("provider");
-			switch (provider)
-			{
-			case 'provider_facebook':
-				$('.point-last').css("margin-left","-14px");
-				break;
-			case 'provider_google':
-				$('.point-last').css("margin-left","53px");
-				break;
-			case 'provider_hyves':
-				$('.point-last').css("margin-left","119px");
-				break;
-			case 'provider_windowslive':
-				$('.point-last').css("margin-left","184px");
-				break;
-			default:
-				$('.point-last').hide();
-			}
-			var title = "Logon using your account from one of the websites below";
-			var form = $('#login-form').html();
-			break;
-		case 'signup':
-			console.log("Sign up");
-			break;
-		case 'new playlist':
-			var title = "Create a new playlist";
-			var form = '<input type="text" name="titlePlaylist" id="titlePlaylist" />';
-			var submit = 	function() {
-				var valueTitle = $('#titlePlaylist').val();
-				addPlaylist(valueTitle);
-				closeDialog();
-			};
-			break;
-		case 'invite to playlist':
-			var title = "Invite others to your playlist";
-			var form = 	'<input id="publicInvite" type="checkbox" name="invite" value="public" /><label for="publicInvite">Public</label><br />';
-				form +=  '<a id="placeInvite" class="small awesome"><i class="icon-map-marker"></i>Connect to this place</a><br />';
-				form += '<label for="emailInvite">Invite someone by email</label><input type="text" name="email" id="emailInvite" /><br />';
-				form +=  '<a id="getGeo" class="small awesome" style="display: none;"><i class="icon-map-marker"></i>Get location</a>';
-			var submit = 	function() {
-				var valueTitle = $('#emailInvite').val();
-				emailInvite(valueTitle);
-				closeDialog();
-			};
-			break;
-		default:
-			console.log("No action passed");
-		}
-		
-
-		// prepare dialog
-		$('#slide-dialog').show();
-		$('#slide-dialog > .title').text(title);
-		$('#slide-dialog > .input').html(form);
-		var dialogHeight = ($('#slide-dialog').outerHeight()) * -1;
-		$('#slide-dialog').css("top", dialogHeight);
-		// show dialog
-		$('#overlay').fadeIn(200);
-		$('#slide-dialog').animate({top: '0'}, 200);
-		
-		if (submit) {
-			$('#dialog-button').click(submit);
+			el.show();
+			currentDialog = el;
+			// show dialog
+			$('#manager, #dialog').stop().animate({
+				left: '-=400px',
+				right: '+=400px'
+			}, 300);
+			
+			dialogVisible = true;
+			
 		} else {
-			$('#dialog-button').hide();
+			
+			closeDialog(el);
+
 		}
 		
-		function closeDialog() {
-			$('#overlay').hide();
-			$('#slide-dialog').hide();
-			var dialogHeight = ($('#slide-dialog').outerHeight()) * -1;
-			$('#slide-dialog').css("top", dialogHeight);
+		function closeDialog(el) {
+			$('#manager, #dialog').stop().animate({
+				left: '+=400px',
+				right: '-=400px'
+			}, 300, function() {
+				currentDialog.hide();
+				if (el && currentDialog) {
+					if (currentDialog.attr('id') != el.attr('id')) {
+						showDialog(el);
+					}
+				}
+			});
+			
+			dialogVisible = false;
 		}
-		
-		$('#overlay').click(function(e) {
-			closeDialog();
-		});
 	}
+	
+	
 	
 		
 		
