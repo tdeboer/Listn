@@ -5,36 +5,69 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<title>Listn - <?php echo $settings['title'] ?></title>
-<link rel="stylesheet" type="text/css" href="reset.css" />
-<link rel="stylesheet" type="text/css" href="style.css" />
-<link rel="stylesheet" type="text/css" href="font-awesome.css" />
-<link href='http://fonts.googleapis.com/css?family=Anaheim' rel='stylesheet' type='text/css'>
-<script type="text/javascript" src="modernizr.js"></script>
-<script>
-	var tag = document.createElement('script');
-	tag.src = "//www.youtube.com/iframe_api";
-	var firstScriptTag = document.getElementsByTagName('script')[0];
-	firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-</script>
-<script type="text/javascript" src="http://code.jquery.com/jquery-1.8.1.min.js"></script>
-<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js"></script>
-<!-- <script type="text/javascript" src="jQueryRotateCompressed.2.1.js"></script> -->
-<script type="text/javascript" src="jquery.tinyscrollbar1-81.min.js"></script>
-<script type="text/javascript" src="playYT.js"></script>
-<script type="text/javascript" src="timeago.js"></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Listn - <?php echo $settings['title'] ?></title>
+	<link rel="stylesheet" type="text/css" href="reset.css" />
+	<link rel="stylesheet" type="text/css" href="style.css" />
+	<link rel="stylesheet" type="text/css" href="font-awesome.css" />
+	<link href='http://fonts.googleapis.com/css?family=Anaheim' rel='stylesheet' type='text/css'>
+	<script type="text/javascript" src="modernizr.js"></script>
+	<script>
+		var tag = document.createElement('script');
+		tag.src = "//www.youtube.com/iframe_api";
+		var firstScriptTag = document.getElementsByTagName('script')[0];
+		firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+	</script>
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.8.1.min.js"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js"></script>
+	<!-- <script type="text/javascript" src="jQueryRotateCompressed.2.1.js"></script> -->
+	<script type="text/javascript" src="jquery.tinyscrollbar1-81.min.js"></script>
+	<script type="text/javascript" src="playYT.js"></script>
+	<script type="text/javascript" src="timeago.js"></script>
 </head>
 	
 <body>
 
-	<?php require_once('tpl-header.php'); ?>
+	<div class="wrapper">
+
+	    <div id="header-bar">
+	    	
+	    	<a class="button back" href="/">
+		    	<i class="icon-th"></i>
+	    	</a>
+	    	
+	        <div id="site-name">
+	        	<h1>Listn - <?php echo $settings['title'] ?></h1>
+	        </div>
+	
+	        <div id="log-state">      
+				
+				<?php fbLogonLink(); ?>
+				
+				<input type="hidden" id="hidden-pl" value="" />
+				<input type="hidden" id="hidden-timestamp" value="" />
+	        </div>
+	        
+	        <a id="btn-settings" class="button forward" href="#">
+		    	<i class="icon-cog"></i>
+	    	</a>
+	        
+	    </div>
     
 	    <div id="menu-bar">
-	        <a href="/" id="allPlaylist" class="action unselectable"><i class="icon-home"></i>All playlists</a>
-	        <a id="btn-new" class="action unselectable"><i class="icon-plus"></i>New playlist</a>
-	        <a id="btn-event" class="action unselectable"><i class="icon-facebook-sign"></i>Event</a>
+	        <a href="/" id="allPlaylist" class="action unselectable">
+	        	<i class="icon-th"></i>
+	        	<span class="caption">All playlists</span>
+	        </a>
+	        <a id="btn-new" class="action unselectable">
+	        	<i class="icon-plus"></i>
+	        	<span class="caption">New playlist</span>
+	        </a>
+	        <a id="btn-event" class="action unselectable">
+	        	<i class="icon-facebook-sign"></i>
+	        	<span class="caption">Event</span>
+	        </a>
 	        <!--
 	        	<a id="btn-invite" class="action unselectable"><i class="icon-envelope"></i>Invite</a>
 	        	<a id="btn-settings" class="action"><i class="icon-cog"></i>Settings</a>
@@ -91,8 +124,12 @@
 					<label for="titlePlaylist">What should be the title of your new playlist?</label>
 					<input type="text" name="titlePlaylist" id="titlePlaylist" />
 					<div class="dialog-buttons">
-						<a id="new-cancel" class="action btn-hide-dialog">Cancel</a>
-						<a id="new-confirm" class="action">Create</a>
+						<a id="new-cancel" class="action btn-hide-dialog">
+							<span class="caption">Cancel</span>
+						</a>
+						<a id="new-confirm" class="action">
+							<span class="caption">Create</span>
+						</a>
 					</div>
 					<div class="throbber"></div>
 				</div>
@@ -100,8 +137,14 @@
 				<div id="facebook-dialog" class="dialog-content">
 					<h2>Connect your playlist to a facebook event</h2>
 					<p>Your events:</p>
-					<div id="events-result"></div>
-					<a id="facebook-confirm" class="small awesome">Connect</a>
+					<div id="events-result">
+						<ul>
+							<?php
+								fbUserEvents();
+							?>
+						</ul>
+					</div>
+					<!-- <a id="facebook-confirm" class="small awesome">Connect</a> -->
 					<div class="throbber"></div>
 				</div>
 				

@@ -2,6 +2,7 @@
 	
 	require_once 'config.php';
 	
+	
 	$playlist = $_GET['id'];
 	$sql1 = mysql_query("SELECT * FROM playlists WHERE uid='$playlist'");
 		
@@ -17,5 +18,7 @@
 		$settings['time'] = $pl['date'];
 		$settings['title'] = $pl['title'];
 	}
-
+	
+	
+	require_once 'fb.php';
 ?> 

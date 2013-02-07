@@ -1,15 +1,12 @@
 /* TODO:
  * OOP approach: playlist is object with options ( * Gather vars in one object. Functions > methods also?)
- * Make dialog flexible with simple templating system with php (require oid)
  * Make seperate js file for home
  * Make delete function
- * - bug when adding files together
-- no facebook login plugin in safari
-- check for updates earlier than on the switch
  * username is not visible
  * 
  */
 
+var log = true;
 var playlist_id;
 var playlist = [];
 var params = { 
@@ -41,12 +38,12 @@ var settings = {
  */
 function playYT() {
 	if (needle < playlist.length) {
-		console.log("Now playing: " + playlist[needle]);
+		devLog("Now playing: " + playlist[needle]);
 		intervalScrubber = clearInterval(intervalScrubber);
 		if (ytplayer) {
 			ytplayer.loadVideoById( playlist[needle] );
 		} else {
-			console.log('Error: Youtube api not loaded!');
+			devLog('Error: Youtube api not loaded!');
 			setTimeout(
 				function() { 
 					//ytplayer.loadVideoById( playlist[needle] );
@@ -67,7 +64,7 @@ function playYT() {
 	}
 }
 
-function onYouTubeIframeAPIReady() {console.log('iFrame ready');
+function onYouTubeIframeAPIReady() {devLog('iFrame ready');
 	//todo: stop autoplay for Modernizr.touch
 	ytplayer = new YT.Player('player', {
 		width: 425,
@@ -79,7 +76,7 @@ function onYouTubeIframeAPIReady() {console.log('iFrame ready');
 			'showinfo': 0,
 			'enablejsapi': 1,
 			'modestbranding': 1,
-			'origin': 'http://www.bitesizedchunks.nl/',
+			'origin': 'http://www.listn.nl/',
 			'wmode': 'opaque'
 		},
 		events: {
@@ -90,14 +87,14 @@ function onYouTubeIframeAPIReady() {console.log('iFrame ready');
     });
 }
 
-function onPlayerReady() {console.log('onreadycalled');
+function onPlayerReady() {devLog('onreadycalled');
 	if (playlist.length > 0) {
 		playYT();
 	}
 }
 
 function onYouTubePlayerReady(playerId) {
-	console.log('Still used 3########');
+	alert('Still used 3########');
 	/*
 		ytplayer = document.getElementById("myytplayer");
 		ytplayer.addEventListener("onStateChange", "onytplayerStateChange");
@@ -107,7 +104,7 @@ function onYouTubePlayerReady(playerId) {
 
 function onytplayerStateChange(event) {
 	playerState = event.data;
-	console.log('Event: ' + event.data);
+	devLog('Event: ' + event.data);
 	if (event.data == 1) {
 		intervalScrubber = clearInterval(intervalScrubber);
 		intervalScrubber = setInterval("updateScrubber()", 200);
@@ -123,15 +120,14 @@ function onytplayerStateChange(event) {
 }
 
 function onytplayerError(error) {
-	console.log ("Error: " + error);
-	if (error == 150 || error == 101 || error == 100) {
-		// invalid file
-		intervalScrubber = clearInterval(intervalScrubber);
-		done = true;
-		$(".item:eq(" + needle + ") > .icon-exclamation-sign").show();
-		if(playlist.length >= 1) needle++;
-		checkUpdates(true);
-	}
+	devLog("Error: " + error);
+	
+	// invalid file
+	intervalScrubber = clearInterval(intervalScrubber);
+	done = true;
+	$(".item:eq(" + needle + ") > .icon-exclamation-sign").show();
+	if(playlist.length >= 1) needle++;
+	checkUpdates(true);
 }
 
 
@@ -163,7 +159,7 @@ function updateScrubber() {
 /*
  * Pubsub (faking)
  */
-function checkUpdates(betweenSongs) {
+function checkUpdates(betweenSongs) { // todo: check- and get-update should be one backend request, move logic to backend
 	var hiddenTimestamp = $('#hidden-timestamp').val();
 	var playlist_id = $('#hidden-pl').val();
 	$.post("requests.php", {
@@ -172,9 +168,9 @@ function checkUpdates(betweenSongs) {
 		},
 		function (data) 
 		{
-			console.log("Current:" + hiddenTimestamp + " Update: " + data);
+			devLog("Current:" + hiddenTimestamp + " Update: " + data);
 			if (data == hiddenTimestamp || hiddenTimestamp.length == 0) {
-				console.log('No new files');
+				devLog('No new files');
 				if (betweenSongs) {
 					playYT(); // TODO: extra check if there is something to play?
 					checkedUpdates = false;
@@ -259,6 +255,16 @@ function initScrollBar() {
 }
 
 
+/*
+ * Log
+ */
+function devLog(message) {
+	if (log == true) {
+		console.log(message);
+	}
+}
+
+
 
   
 $(document).ready (function() {
@@ -267,7 +273,7 @@ $(document).ready (function() {
 	/*
 lol = function()
 	{
-		console.log('####lol function is used!####');
+		devLog('####lol function is used!####');
 		pl_scroll.tinyscrollbar_update();
 	};
 */
@@ -364,7 +370,7 @@ lol = function()
         
     //TODO: still needed?
 	if (playlist.length > 0) {
-		console.log('###### Yes, still needed! ######');
+		alert('###### Yes, still needed! ######');
 		//playYT(); //test
 	} 
 	
@@ -383,11 +389,11 @@ lol = function()
 				if (data.authenticated)
 				{
 					// playlist = [];
-					console.log(data);
+					devLog(data);
 					playlist_id = data.pl_id;
 					// TODO: getplaylist by submitting form
 					// getPlaylist(playlist_id, hiddenId);
-					window.location = 'http://www.bitesizedchunks.nl/ytapi/list.php?id=' + playlist_id;
+					window.location = 'http://www.listn.nl/list.php?id=' + playlist_id;
 				}
 				else
 				{
@@ -409,7 +415,7 @@ lol = function()
 		{
 			if (data.authenticated)
 			{
-		 		//empty playlist items
+		 		// empty playlist items
 	 			$('#userPlaylist').children().remove();
 	 			throbber( $('.overview'), 'hide' );
 	 			// TODO: stop current video
@@ -422,7 +428,11 @@ lol = function()
 					var dur = data.posts[i].duration;
 					var date = data.posts[i].date;
 					var contributor = data.posts[i].user;
-					$('#userPlaylist').append( $(itemBlock(title, file, image, dur, contributor, date )).css('visibility', 'hidden') );
+					$('#userPlaylist').append(
+						$(itemBlock(
+							title, file, image, dur, contributor, date )
+						).css('visibility', 'hidden')
+					);
 				}
 				
 				// adjust scroll bar before setting items on display: none
@@ -432,10 +442,10 @@ lol = function()
 				$("abbr.timeago").timeago();
 				
 				$('.item').each(function(index) {
-				    $(this).delay(400*index).hide().css('visibility', 'visible').fadeIn(300);
+				    $(this).delay(200*index).hide().css('visibility', 'visible').fadeIn(300);
 				});
 				
-				console.log(data.timestamp + "; " + data.playlist);
+				devLog(data.timestamp + "; " + data.playlist);
 				$('#hidden-timestamp').val(data.timestamp);
 				$('#hidden-pl').val(data.playlist);
 				
@@ -475,6 +485,8 @@ lol = function()
 				var d = data.object[0];
 				$('#userPlaylist').append( $(itemBlock(d.title, d.file, d.image, d.dur, d.user, $.timeago(new Date()) )).hide().fadeIn(300) );
 				
+				$('#hidden-timestamp').val(data.timestamp);
+				
 				setTimeout(
 					function() { 
 						pl_scroll.tinyscrollbar_update();
@@ -483,6 +495,9 @@ lol = function()
 				);
 				$("abbr.timeago").timeago();
 				
+				
+				// todo: move to php sdk
+				/*
 				if (data.event) {
 					var message = "added '" + d.title + "' to the playlist.";
 					var url = 'https://graph.facebook.com/' + data.event + '/feed';
@@ -497,9 +512,10 @@ lol = function()
 			     		picture: d.image
 			     	},
 			     	function(fbdata) {
-			     		console.log(fbdata.data);
+			     		devLog(fbdata.data);
 			     	});
 				}
+				*/
 				
 				if (playlist.length == 1) {
 					playYT();
@@ -514,7 +530,7 @@ lol = function()
 	}
 	
 	function updatePlaylist() {
-		console.log('######Dit wordt nog gebruikt!!!!!######');
+		alert('######Dit wordt nog gebruikt!!!!!######');
 		$.post("requests.php", 
 		{
  			request: "update_playlist",
@@ -522,7 +538,7 @@ lol = function()
  		},
  		function (data) 
  		{
-			console.log('Playlist updated');
+			devLog('Playlist updated');
 		}
 	)};
 	
@@ -584,7 +600,7 @@ lol = function()
 			     		description: "www.listn.nl"
 			     	},
 			     	function(fbdata) {
-			     		console.log(fbdata.data);
+			     		devLog(fbdata.data);
 			     		throbber( $('#facebook-dialog'), 'hide' );
 			     	});
 				}
@@ -648,7 +664,7 @@ $( ".input-prepend" ).focusout(function() {
 			var idClean = entry.media$group.yt$videoid.$t;
 			var idDirty = idClean + 'search';
 			var duration = entry.media$group.yt$duration.seconds;
-			$('#search-result').append('<li class="result" id="' + idDirty + '"><img src="' + img + '" width="60" />' + title + '</li>');
+			$('#search-result').append('<li class="result" id="' + idDirty + '"><img src="' + img + '" width="60" /><div class="caption">' + title + '</div></li>');
 			$('#' + idDirty).data('fileData', { id: idClean, img: img, title: title, duration: duration });
 			if (!Modernizr.touch) {
 				pl_scroll2.tinyscrollbar_update();
@@ -656,7 +672,7 @@ $( ".input-prepend" ).focusout(function() {
 		}
 	}
 	
-	$('.result').live('click', function () {
+	$('#search-result').delegate('.result','click', function () {
 		var searchId = $(this).attr("id");
 		var file = $('#' + searchId).data('fileData').id;
 		var title = $('#' + searchId).data('fileData').title;
@@ -689,7 +705,7 @@ $( ".input-prepend" ).focusout(function() {
 		$(this).removeClass("selected");
 	});
 	
-	$('.item').live('click', function () {
+	$('#userPlaylist').delegate('.item', 'click', function () {
 		var gotoId = $(this).attr('id');
 		needle = $.inArray(gotoId, playlist);
 		playYT();
@@ -773,14 +789,6 @@ $( ".input-prepend" ).focusout(function() {
 	// TODO: do this with php. e.g. require init.php
 	var idGET = $.getUrlVar('id');
 	if (typeof idGET != "undefined") {
-		/*
-setTimeout(
-			function() { 
-				getPlaylist(idGET);
-			},
-			5000
-		);
-*/
 		getPlaylist(idGET);
 	}
 	
@@ -803,7 +811,7 @@ setTimeout(
 			}
 			else
 			{
-				console.log('Niet ingelogd');
+				devLog('Niet ingelogd');
 			}
 		}, 
 		"json");
@@ -847,8 +855,8 @@ setTimeout(
 	
 	$('#facebook-confirm').click(function(e) {
 		var radioValue = $('#events-result .radio-item input:checked').val();
-		console.log(radioValue);
-		connectEvent(radioValue);
+		devLog(radioValue);
+		//connectEvent(radioValue);
 	});
 	
 	$('#btn-invite').click(function(e) {
@@ -856,7 +864,7 @@ setTimeout(
 	});
 	
 	$('#btn-settings').click(function(e) {
-		showDialog( $('#settings-dialog') );
+		showDialog( $('#facebook-dialog'), $(this) );
 	});
 	
 	$('#logout').click(function(e) {
@@ -879,17 +887,20 @@ setTimeout(
 	});
 	
 	
-	function showDialog(el) {
+	function showDialog(el, btn) {
 		if (!dialogVisible) {
 			
 			el.show();
 			currentDialog = el;
 			// show dialog
 			$('#manager, #dialog').stop().animate({
-				left: '-=400px',
-				right: '+=400px'
-			}, 300);
+				left: '-=292px',
+				right: '+=292px'
+			}, 600);
 			
+			if (btn) {
+				btn.addClass('hover');
+			}
 			dialogVisible = true;
 			
 		} else {
@@ -900,14 +911,17 @@ setTimeout(
 		
 		function closeDialog(el) {
 			$('#manager, #dialog').stop().animate({
-				left: '+=400px',
-				right: '-=400px'
-			}, 300, function() {
+				left: '+=292px',
+				right: '-=292px'
+			}, 600, function() {
 				currentDialog.hide();
 				if (el && currentDialog) {
 					if (currentDialog.attr('id') != el.attr('id')) {
 						showDialog(el);
 					}
+				}
+				if (btn) {
+					btn.removeClass('hover');
 				}
 			});
 			
@@ -944,6 +958,8 @@ setTimeout(
 		var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
 		document.cookie=c_name + "=" + c_value;
 	}
+	
+	
 
 	
  // end document.ready function.

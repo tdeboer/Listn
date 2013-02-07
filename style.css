@@ -1,3 +1,54 @@
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+
+
 body {
 	margin:0;
 	padding:0;
@@ -39,6 +90,19 @@ h2 {
 	padding:6px;
 }
 
+#header-bar .button {
+	display: none;
+	text-decoration: none;
+	font-size: 1.4em;
+	margin: 3px;
+	padding: 3px;
+	line-height: 22px;
+}
+
+#header-bar .button.forward {
+	float: right;
+}
+
 #menu-bar {
 	background-color: #393939;
 	padding: 3px;
@@ -72,8 +136,8 @@ h2 {
 }
 
 #site-name {
-	float:left;
-	color:#fc0;
+	display: inline-block;
+	color: #fc0;
 }
 
 #manager {
@@ -129,25 +193,32 @@ h2 {
 #results {
 	width: 700px;
 	right: 0;
-	background-color: #232323;
+	background-color: #eee;
+	color: #232323;
 	position: absolute;
 	display: none;
 	z-index: 10;
 	margin-right: 12px;
 }
 
+#results li {
+	list-style: none;
+	height: 45px;
+	padding: 3px;
+	overflow: hidden;
+}
+
+.no-touch #results li:hover,
+.touch #results li.hover {
+	background-color: #b3b3b3;
+}
+
 #results li img {
 	width: 60px;
 	height: 45px;
 	background-color: #000;
-}
-
-#results li {
-	list-style: none;
-}
-
-#results li:hover {
-	background-color:#666;
+	float: left;
+	margin-right: 3px;
 }
 
 /* Playlist */
@@ -249,7 +320,8 @@ h2 {
 	text-decoration:none;
 }
 
-.button:hover i {
+.no-touch .button:hover i,
+.touch .button.hover i {
 	text-shadow: 0 0 10px #fff;
 }
 
@@ -377,18 +449,24 @@ h2 {
 
 /* buttons */
 .action {
-	font: 14px/22px 'Helvetica Neue', Helvetica, Verdana, sans-serif;
 	border-radius: 3px;
 	border: 1px solid #777;
 	background-color: #5f5f5f;
-	padding: 1px 6px;
 	text-decoration: none;
 	cursor: pointer;
+	font: 14px/22px 'Helvetica Neue', Helvetica, Verdana, sans-serif;
+	padding: 1px 6px;
+	display: inline-block;
 }
 
 .action:hover {
 	border-color: #aaa;
 	background-color: #888;
+}
+
+.action.large {
+	font: 20px/28px 'Helvetica Neue', Helvetica, Verdana, sans-serif;
+	padding: 6px 12px;
 }
 
 .action i {
@@ -410,9 +488,11 @@ h2 {
 
 /* slide-dialog */
 .wrapper #dialog {
-	width: 388px;
+	width: 280px;
 	left: 100%;
+	top: 42px;
 	padding: 0;
+	margin-left: 12px;
 }
 
 #dialog-wrapper {
@@ -511,8 +591,13 @@ h2 {
 }
 
 .touch #menu-bar,
-.touch .footer {
+.touch .footer,
+.touch #btn-hide-dialog {
 	display: none;
+}
+
+.touch #header-bar .button {
+	display: inline-block;
 }
 
 .touch #manager {
@@ -560,3 +645,57 @@ h2 {
 .touch #scrollbar1 { width: auto; }
 .touch #scrollbar1 .scrollbar { display: none; }
 .touch #scrollbar1 .overview { position: relative; }
+
+.touch #scrollbar2, .touch #scrollbar2 .viewport { width: auto; }
+.touch #scrollbar2 .scrollbar { display: none; }
+
+
+/*
+ * index - dashboard
+ */
+.dashboard .playlists,
+.dashboard .updates {
+	background-color: #3b3b3b;
+	float: left;
+	margin: 1%;
+}
+
+.dashboard .playlists {
+	width: 58%;
+}
+
+.dashboard .updates {
+	width: 39%;
+	margin-left: 0;
+}
+
+.dashboard .action-new,
+.dashboard #user-playlists,
+.dashboard #all-playlists,
+.dashboard .stream {
+	padding: 1%;
+}
+
+.dashboard #user-playlists a,
+.dashboard #all-playlists a {
+	text-decoration: none;
+}
+
+.dashboard .updates iframe {
+	margin-top: 3px;
+}
+
+.dashboard .action-new #titlePlaylist {
+	width: 39%;
+	font-size: 18px;
+	line-height: 32px;
+}
+
+@media all and (max-width: 768px) {
+	.dashboard .updates {
+		display: none;
+	}
+	.dashboard .playlists {
+		width: 98%;
+	}
+}
