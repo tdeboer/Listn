@@ -30,7 +30,7 @@ function fbLogonLink() {
 			if (mysql_num_rows($sql1))
 			{
 				// facebook user is known, update the datestamp
-				$sql2 = mysql_query("UPDATE users SET log=NOW() WHERE fbid=$fbid"); // todo: update acces token
+				$sql2 = mysql_query("UPDATE users SET log=NOW(), user_token=\"$fb_access_token\" WHERE fbid=$fbid");
 				if (!$sql2)
 				{
 					die('Error2: ' . mysql_error());

@@ -44,9 +44,10 @@
 	        <div id="log-state">      
 				
 				<?php fbLogonLink(); ?>
-				
-				<input type="hidden" id="hidden-pl" value="" />
-				<input type="hidden" id="hidden-timestamp" value="" />
+
+				<input type="hidden" id="hidden-pl" value="<?php echo $settings['uid'] ?>" />
+				<input type="hidden" id="hidden-timestamp" value="<?php echo $settings['time'] ?>" />
+				<input type="hidden" id="hidden-item" value="<?php echo $_GET['item'] ?>" />
 	        </div>
 	        
 	        <a id="btn-settings" class="button forward" href="#">
@@ -101,8 +102,9 @@
 						<div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
 						<div class="viewport">
 							<div class="overview">
-								<div id="userPlaylist"></div>
-								<div class="throbber"></div>
+								<div id="userPlaylist">
+									<?php getFiles(); ?>
+								</div>
 							</div>
 						</div>
 					</div>

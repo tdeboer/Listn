@@ -93,15 +93,6 @@ function onPlayerReady() {devLog('onreadycalled');
 	}
 }
 
-function onYouTubePlayerReady(playerId) {
-	alert('Still used 3########');
-	/*
-		ytplayer = document.getElementById("myytplayer");
-		ytplayer.addEventListener("onStateChange", "onytplayerStateChange");
-		ytplayer.addEventListener("onError", "onytplayerError");
-	*/
-} 
-
 function onytplayerStateChange(event) {
 	playerState = event.data;
 	devLog('Event: ' + event.data);
@@ -170,7 +161,7 @@ function checkUpdates(betweenSongs) { // todo: check- and get-update should be o
 		{
 			devLog("Current:" + hiddenTimestamp + " Update: " + data);
 			if (data == hiddenTimestamp || hiddenTimestamp.length == 0) {
-				devLog('No new files');
+				devLog('173: No new files');
 				if (betweenSongs) {
 					playYT(); // TODO: extra check if there is something to play?
 					checkedUpdates = false;
@@ -204,7 +195,7 @@ function getUpdates(hiddenTimestamp, playlist_id, betweenSongs) {
 			}
 			
 			$('#hidden-timestamp').val(data.timestamp);
-			//$.fn.lol();  //bug: breaks
+			
 			// Update plugins
 			pl_scroll.tinyscrollbar_update();
 			$("abbr.timeago").timeago();
@@ -269,14 +260,28 @@ function devLog(message) {
   
 $(document).ready (function() {
 	throbber($('.overview'), 'show');
+
+	initPlaylist();
 	
-	/*
-lol = function()
-	{
-		devLog('####lol function is used!####');
-		pl_scroll.tinyscrollbar_update();
-	};
-*/
+	function initPlaylist() {
+		$("abbr.timeago").timeago();
+		setSettings( $('#hidden-pl').val() );
+		$('#userPlaylist .item').each(function() {
+			playlist.push( $(this).attr('id') );	
+		});
+		
+		// play item from url
+		if ( $('#hidden-item').val() != "") {
+			needle = $.inArray($('#hidden-item').val(), playlist);
+		}
+		
+		/*
+		// if youtube isn't loaded yet?
+		if (playlist.length > 0) {
+			playYT();
+		}
+		*/
+	}
 	
 	function throbber(parent, toggle) {
 		if (toggle == 'hide') {
@@ -286,48 +291,10 @@ lol = function()
 		}
 	}
 	
-	// geo location
-	$("#placeInvite").live("click", initiate_geolocation);
-	
 	if (!Modernizr.touch){
 		initScrollBar();
 	}
-	
-	function initiate_geolocation() {  
-        //navigator.geolocation.getCurrentPosition(handle_geolocation_query,handle_errors);
-		$.post("requests.php", {
-			request: "user_events"
-			},
-			function (data) 
-			{
-				
-			},
-			"json");
-    }  
 
-	function handle_errors(error)  
-    {  
-        switch(error.code)  
-        {  
-            case error.PERMISSION_DENIED: alert("user did not share geolocation data");  
-            break;  
-
-            case error.POSITION_UNAVAILABLE: alert("could not detect current position");  
-            break;  
-
-            case error.TIMEOUT: alert("retrieving position timed out");  
-            break;  
-
-            default: alert("unknown error");  
-            break;  
-        }  
-    }
-	
-    function handle_geolocation_query(position){  
-        alert('Lat: ' + position.coords.latitude + ' ' +  
-              'Lon: ' + position.coords.longitude);  
-    } 
-	
 
 	
 	/*
@@ -366,13 +333,6 @@ lol = function()
 			ytplayer.seekTo(ui.value /10,true);
 		}
 	});
-    
-        
-    //TODO: still needed?
-	if (playlist.length > 0) {
-		alert('###### Yes, still needed! ######');
-		//playYT(); //test
-	} 
 	
 	
 	/*
@@ -391,8 +351,6 @@ lol = function()
 					// playlist = [];
 					devLog(data);
 					playlist_id = data.pl_id;
-					// TODO: getplaylist by submitting form
-					// getPlaylist(playlist_id, hiddenId);
 					window.location = 'http://www.listn.nl/list.php?id=' + playlist_id;
 				}
 				else
@@ -403,64 +361,7 @@ lol = function()
 			"json");
 	}
 	
-	
-	function getPlaylist(plid) {
-		throbber($('.overview'), 'show');
-		$.post("requests.php", 
-		{
-			request : "get_playlist", 
-			pl: plid 
-		},
-		function (data) 
-		{
-			if (data.authenticated)
-			{
-		 		// empty playlist items
-	 			$('#userPlaylist').children().remove();
-	 			throbber( $('.overview'), 'hide' );
-	 			// TODO: stop current video
-	 			
-				var songs = data.posts;
-				for (var i = 0; i < songs.length; ++i) {
-					var title = data.posts[i].title;
-					var file = data.posts[i].file;
-					var image = data.posts[i].image;
-					var dur = data.posts[i].duration;
-					var date = data.posts[i].date;
-					var contributor = data.posts[i].user;
-					$('#userPlaylist').append(
-						$(itemBlock(
-							title, file, image, dur, contributor, date )
-						).css('visibility', 'hidden')
-					);
-				}
-				
-				// adjust scroll bar before setting items on display: none
-				if (!Modernizr.touch){
-					pl_scroll.tinyscrollbar_update();
-				}
-				$("abbr.timeago").timeago();
-				
-				$('.item').each(function(index) {
-				    $(this).delay(200*index).hide().css('visibility', 'visible').fadeIn(300);
-				});
-				
-				devLog(data.timestamp + "; " + data.playlist);
-				$('#hidden-timestamp').val(data.timestamp);
-				$('#hidden-pl').val(data.playlist);
-				
-				setSettings(data.playlist);
-
-			}
-			else
-			{
-				notAuth(data.reason);
-			}
 			
-		},
-		"json");
-	} 
-		
 	function addFile(fileTitle, fileId, fileImg, fileDuration) {
 		var playlist_id = $('#hidden-pl').val();
 		// TODO bug: indexFile is -1
@@ -528,20 +429,7 @@ lol = function()
 		}, 
 			"json");
 	}
-	
-	function updatePlaylist() {
-		alert('######Dit wordt nog gebruikt!!!!!######');
-		$.post("requests.php", 
-		{
- 			request: "update_playlist",
- 			title: newTitle
- 		},
- 		function (data) 
- 		{
-			devLog('Playlist updated');
-		}
-	)};
-	
+		
 	
 	function setSettings(playlist_id) {
 		
@@ -717,10 +605,10 @@ $( ".input-prepend" ).focusout(function() {
 			if (event.keyCode == '32') {
 				playPause();
 			}
-			else if (event.keyCode == '37') {
+			else if (event.keyCode == '38') {
 				controlPrev();
 			}
-			else if (event.keyCode == '39') {
+			else if (event.keyCode == '40') {
 				controlNext();
 			}
 		}
@@ -786,13 +674,8 @@ $( ".input-prepend" ).focusout(function() {
 	/*
 	 * GET variables
 	 */
-	// TODO: do this with php. e.g. require init.php
-	var idGET = $.getUrlVar('id');
-	if (typeof idGET != "undefined") {
-		getPlaylist(idGET);
-	}
-	
-	// TODO: what happens wih the getPlaylist when you are not yet a participant?
+	// TODO:	- what happens wih the getPlaylist(legacy) when you are not yet a participant?
+	//			- move to back-end
 	var tokenGET = $.getUrlVar('token');
 	if (typeof tokenGET != "undefined") {
 		setToken( tokenGET );
@@ -831,10 +714,9 @@ $( ".input-prepend" ).focusout(function() {
 		else
 		{
 			alert("For this you'll have to login");
-			FB.login();
 		}
 	}
-		
+	
 	
 	
 	/*

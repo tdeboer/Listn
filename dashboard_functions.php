@@ -6,8 +6,7 @@
 		
 		while($file = mysql_fetch_array($sql1))
 		{
-			//$players .= $file['file_id'];
-			$players .= '<iframe id="ytplayer" type="text/html" width="100%" src="http://www.youtube.com/embed/' . $file['file_id'] . '?origin=http://listn.nl" frameborder="0"></iframe>';
+			$players .= '<iframe id="ytplayer" type="text/html" width="100%" height="200" src="http://www.youtube.com/embed/' . $file['file_id'] . '?origin=http://listn.nl" frameborder="0"></iframe>';
 		}
 		
 		print_r($players);
