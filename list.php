@@ -1,7 +1,4 @@
-<!-- TODO:
- - get all properties and maybe even the items from playlist 
--->
-<?php	require_once('init.php'); ?>
+<?php require_once('init.php'); ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -47,7 +44,7 @@
 
 				<input type="hidden" id="hidden-pl" value="<?php echo $settings['uid'] ?>" />
 				<input type="hidden" id="hidden-timestamp" value="<?php echo $settings['time'] ?>" />
-				<input type="hidden" id="hidden-item" value="<?php echo $_GET['item'] ?>" />
+				<input type="hidden" id="hidden-item" value="<?php if(isset($_GET['item'])) echo $_GET['item'] ?>" />
 	        </div>
 	        
 	        <a id="btn-settings" class="button forward" href="#">

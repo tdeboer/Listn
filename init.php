@@ -106,19 +106,20 @@
 			if (!in_array($userVal, $userArray))
 			{
 				array_push($userArray, $userVal);
-			}	
+			}
 		}
-		
+
 		// get usernames of contributors
-		$ids = join(',',$userArray);
+		$ids = join("','",$userArray);
 		$sql2 = mysql_query("SELECT * FROM users WHERE uid IN ('$ids')");
 		if (!$sql2) die('Error2: ' . mysql_error());
 		
+		$id_names = array();
 		while($u = mysql_fetch_array($sql2))
 		{
 			$id = $u['uid'];
 			$id_name = $u['username'];
-			$id_names = array($id=>$id_name);
+			$id_names[$id] = $id_name;
 		}
 		
 		// reset internal result pointer for first query for second iteration
