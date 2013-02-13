@@ -43,7 +43,7 @@ function fbLogonLink() {
 				}
 			} else {
 				// facebook user is unknown, add to users table
-				$sql3 = mysql_query("INSERT INTO users(user_token, fbid, email, username, log) VALUES ('$fb_access_token', '$fbid', '$email', '$name', NOW())"); // removed access token
+				$sql3 = mysql_query("INSERT INTO users(user_token, fbid, email, username, log) VALUES ('$fb_access_token', '$fbid', '$fbemail', '$fbname', NOW())"); // removed access token
 				if (!$sql3)
 				{
 					die('Error3: ' . mysql_error());
