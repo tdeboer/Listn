@@ -5,11 +5,11 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<title>Listn - <?php echo $settings['title'] ?></title>
-	<link rel="stylesheet" type="text/css" href="reset.css" />
-	<link rel="stylesheet" type="text/css" href="style.css" />
-	<link rel="stylesheet" type="text/css" href="font-awesome.css" />
+	<link rel="stylesheet" type="text/css" href="css/reset.css" />
+	<link rel="stylesheet" type="text/css" href="css/style.css" />
+	<link rel="stylesheet" type="text/css" href="css/font-awesome.css" />
 	<link href='http://fonts.googleapis.com/css?family=Anaheim' rel='stylesheet' type='text/css'>
-	<script type="text/javascript" src="modernizr.js"></script>
+	<script type="text/javascript" src="scripts/modernizr.js"></script>
 	<script>
 		var tag = document.createElement('script');
 		tag.src = "//www.youtube.com/iframe_api";
@@ -18,10 +18,9 @@
 	</script>
 	<script type="text/javascript" src="http://code.jquery.com/jquery-1.8.1.min.js"></script>
 	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js"></script>
-	<!-- <script type="text/javascript" src="jQueryRotateCompressed.2.1.js"></script> -->
-	<script type="text/javascript" src="jquery.tinyscrollbar1-81.min.js"></script>
-	<script type="text/javascript" src="playYT.js"></script>
-	<script type="text/javascript" src="timeago.js"></script>
+	<script type="text/javascript" src="scripts/jquery.tinyscrollbar1-81.min.js"></script>
+	<script type="text/javascript" src="scripts/playYT.js"></script>
+	<script type="text/javascript" src="scripts/timeago.js"></script>
 </head>
 	
 <body>

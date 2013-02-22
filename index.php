@@ -9,13 +9,13 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<title>Listn</title>
-	<link rel="stylesheet" type="text/css" href="reset.css" />
-	<link rel="stylesheet" type="text/css" href="style.css" />
-	<link rel="stylesheet" type="text/css" href="font-awesome.css" />
+	<link rel="stylesheet" type="text/css" href="css/reset.css" />
+	<link rel="stylesheet" type="text/css" href="css/style.css" />
+	<link rel="stylesheet" type="text/css" href="css/font-awesome.css" />
 	<link href='http://fonts.googleapis.com/css?family=Anaheim' rel='stylesheet' type='text/css'>
-	<script type="text/javascript" src="modernizr.js"></script>
+	<script type="text/javascript" src="scripts/modernizr.js"></script>
 	<script type="text/javascript" src="http://code.jquery.com/jquery-1.8.1.min.js"></script>
-	<script type="text/javascript" src="dashboard_actions.js"></script>
+	<script type="text/javascript" src="scripts/dashboard_actions.js"></script>
 </head>
 	
 <body>
