@@ -5,7 +5,6 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<title>Listn - <?php echo $settings['title'] ?></title>
-	<link rel="stylesheet" type="text/css" href="css/reset.css" />
 	<link rel="stylesheet" type="text/css" href="css/style.css" />
 	<link rel="stylesheet" type="text/css" href="css/font-awesome.css" />
 	<link href='http://fonts.googleapis.com/css?family=Anaheim' rel='stylesheet' type='text/css'>
@@ -33,8 +32,10 @@
 		    	<i class="icon-th"></i>
 	    	</a>
 	    	
+	    	<div class="logo"></div>
+	    	
 	        <div id="site-name">
-	        	<h1>Listn - <?php echo $settings['title'] ?></h1>
+	        	<span>Listn - <?php echo $settings['title'] ?></span>
 	        </div>
 	
 	        <div id="log-state">      

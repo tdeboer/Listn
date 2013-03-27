@@ -73,7 +73,7 @@
 		}
 		
 		// get the items belonging to the playlist
-		$sql = mysql_query("SELECT * FROM files WHERE pl_id='$playlist' "); //orderby index
+		$sql = mysql_query("SELECT * FROM files WHERE pl_id=$playlist ORDER BY uid DESC"); //orderby index
 		if (!$sql) die('Error1: ' . mysql_error());
 		
 		$userArray = array();

@@ -90,6 +90,11 @@ h2 {
 	padding:6px;
 }
 
+.home #header-bar {
+	height: 128px;
+	padding-left: 18px;
+}
+
 #header-bar .button {
 	display: none;
 	text-decoration: none;
@@ -101,6 +106,34 @@ h2 {
 
 #header-bar .button.forward {
 	float: right;
+}
+
+#header-bar .logo {
+	background: url("../gfx/logo-export22.png") no-repeat center;
+	display: inline-block;
+	width: 22px;
+	height: 22px;
+	vertical-align: middle;
+}
+
+.home #header-bar .logo {
+	background: url("../gfx/logo-export88.png") no-repeat center;
+	width: 88px;
+	height: 128px;
+	margin-right: 12px;
+}
+
+#header-bar #site-name {
+	display: inline-block;
+	color: #fc0;
+	font: 1.6em/1.2em 'Anaheim', sans-serif;
+	margin: 0;
+	vertical-align: middle;
+}
+
+.home #header-bar #site-name {
+	font-size: 2.6em;
+	line-height: 2.8em;
 }
 
 #menu-bar {
@@ -133,11 +166,6 @@ h2 {
 
 #login-form input {
 	margin-bottom:6px;
-}
-
-#site-name {
-	display: inline-block;
-	color: #fc0;
 }
 
 #manager {
