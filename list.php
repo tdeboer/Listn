@@ -44,7 +44,7 @@
 
 				<input type="hidden" id="hidden-pl" value="<?php echo $settings['uid'] ?>" />
 				<input type="hidden" id="hidden-timestamp" value="<?php echo $settings['time'] ?>" />
-				<input type="hidden" id="hidden-item" value="<?php if(isset($_GET['item'])) echo $_GET['item'] ?>" />
+				<input type="hidden" id="hidden-item" value="<?php if(isset($_GET['item'])) echo $_GET['item']; ?>" />
 	        </div>
 	        
 	        <a id="btn-settings" class="button forward" href="#">
@@ -109,6 +109,8 @@
 				
 				<div id="player"></div>
 	    
+				<a href="http://www.bitesizedchunks.nl" class="brand"></a>
+
 	    <!-- end #manager -->
 		</div>
 		

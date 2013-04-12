@@ -409,6 +409,7 @@
 		session_destroy();
 		break;
 		
+	/* Not used anymore?
 	case "store_user":
 		$response['authenticated'] = true;
 		$fbid = $_POST['fbid'];
@@ -452,6 +453,7 @@
 		$response['user_id'] = $_SESSION['user_id'];
 		echo json_encode($response);
 		break;
+	*/
 	
 	case "update_user":
 		$uid = $_POST['user_id'];

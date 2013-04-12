@@ -727,3 +727,24 @@ h2 {
 		width: 98%;
 	}
 }
+
+.brand {
+  background: url("../gfx/logo.png") no-repeat;
+  float: right;
+  width: 18px;
+  height: 18px;
+  margin: 18px;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+@media (min--moz-device-pixel-ratio: 1.5), (-o-min-device-pixel-ratio: 3 / 2), (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 1.5dppx) {
+  /* line 35, ../../resources/sass/screen.scss */
+  .brand {
+    background: url("../gfx/logo@2x.png") no-repeat;
+    -webkit-background-size: 18px;
+    -moz-background-size: 18px;
+    -o-background-size: 18px;
+    background-size: 18px;
+  }
+}
