@@ -1,0 +1,13 @@
+{{#items}}
+<li class="item" id="{{file_id}}">
+	<div class="image">
+		<img src="{{image}}" height="50" />
+	</div>
+	<div class="text">
+		<div class="dur">{{calcDuration}}</div>
+		<div class="title">{{file_name}}</div>
+		<div class="comment">Added by {{contributor}} <abbr class="timeago" title="{{date}}">{{date}}</abbr></div>
+	</div>
+	<i class="icon-exclamation-sign" alt="Skipped"></i>
+</li>
+{{/items}}

@@ -1,0 +1,21 @@
+
+/* listn.playlists */
+
+[{"uid": 1,"title": "Frisse start","admin_id": "516d0f77d89a2c1263000001","last_user_id": "516d0f77d89a2c1263000003","date": "2013-04-15 09:32:00","public": 1,"location_id": 0,"place_id": 0,"event_id": 122196011260712}, {"uid": 5,"title": "Wansmaak donderdag","admin_id": 8,"last_user_id": "516d0f77d89a2c1263000001","date": "2013-01-21 23:58:44","public": 1,"location_id": 0,"place_id": 0,"event_id": null}, {"uid": "516d0f77d89a2c1263000005","title": "Smerige ghetto hits","admin_id": "516d0f77d89a2c1263000001","last_user_id": "516d0f77d89a2c1263000001","date": "2012-10-31 11:29:27","public": 1,"location_id": 0,"place_id": 0,"event_id": null}, {"uid": 30,"title": "zee zee","admin_id": "516d0f77d89a2c1263000006","last_user_id": "516d0f77d89a2c1263000001","date": "2013-02-14 13:52:57","public": 1,"location_id": 0,"place_id": 0,"event_id": null}, {"uid": 31,"title": "byebye MM!","admin_id": "516d0f77d89a2c1263000003","last_user_id": "516d0f77d89a2c1263000003","date": "2013-04-15 09:32:12","public": 1,"location_id": 0,"place_id": 0,"event_id": null}, {"uid": 32,"title": "","admin_id": "516d0f77d89a2c1263000003","last_user_id": 0,"date": null,"public": 1,"location_id": 0,"place_id": 0,"event_id": null}, {"uid": 33,"title": "Titus Andronicus","admin_id": "516d0f77d89a2c1263000003","last_user_id": "516d0f77d89a2c1263000003","date": "2013-03-27 10:23:48","public": 1,"location_id": 0,"place_id": 0,"event_id": null}, {"uid": 34,"title": "Marie\'s goeie muziek","admin_id": "516d0f77d89a2c1263000005","last_user_id": 0,"date": null,"public": 1,"location_id": 0,"place_id": 0,"event_id": null}]
+
+
+
+
+{ "uid" : 1, "title" : "Frisse start", "admin_id" : "516d0f77d89a2c1263000001", "last_user_id" : "516d0f77d89a2c1263000003", "date" : "2013-04-15 09:32:00", "public" : 1, "location_id" : 0, "place_id" : 0, "event_id" : 122196011260712, "_id" : ObjectId("516d10e0dd17bb3263000001") }
+{ "uid" : 5, "title" : "Wansmaak donderdag", "admin_id" : 8, "last_user_id" : "516d0f77d89a2c1263000001", "date" : "2013-01-21 23:58:44", "public" : 1, "location_id" : 0, "place_id" : 0, "event_id" : null, "_id" : ObjectId("516d10e0dd17bb3263000002") }
+{ "uid" : ###19###, "title" : "Smerige ghetto hits", "admin_id" : "516d0f77d89a2c1263000001", "last_user_id" : "516d0f77d89a2c1263000001", "date" : "2012-10-31 11:29:27", "public" : 1, "location_id" : 0, "place_id" : 0, "event_id" : null, "_id" : ObjectId("516d10e0dd17bb3263000003") }
+{ "uid" : 30, "title" : "zee zee", "admin_id" : "516d0f77d89a2c1263000006", "last_user_id" : "516d0f77d89a2c1263000001", "date" : "2013-02-14 13:52:57", "public" : 1, "location_id" : 0, "place_id" : 0, "event_id" : null, "_id" : ObjectId("516d10e0dd17bb3263000004") }
+{ "uid" : 31, "title" : "byebye MM!", "admin_id" : "516d0f77d89a2c1263000003", "last_user_id" : "516d0f77d89a2c1263000003", "date" : "2013-04-15 09:32:12", "public" : 1, "location_id" : 0, "place_id" : 0, "event_id" : null, "_id" : ObjectId("516d10e0dd17bb3263000005") }
+{ "uid" : 32, "title" : "", "admin_id" : "516d0f77d89a2c1263000003", "last_user_id" : 0, "date" : null, "public" : 1, "location_id" : 0, "place_id" : 0, "event_id" : null, "_id" : ObjectId("516d10e0dd17bb3263000006") }
+{ "uid" : 33, "title" : "Titus Andronicus", "admin_id" : "516d0f77d89a2c1263000003", "last_user_id" : "516d0f77d89a2c1263000003", "date" : "2013-03-27 10:23:48", "public" : 1, "location_id" : 0, "place_id" : 0, "event_id" : null, "_id" : ObjectId("516d10e0dd17bb3263000007") }
+{ "uid" : 34, "title" : "Marie's goeie muziek", "admin_id" : "516d0f77d89a2c1263000005", "last_user_id" : 0, "date" : null, "public" : 1, "location_id" : 0, "place_id" : 0, "event_id" : null, "_id" : ObjectId("516d10e0dd17bb3263000008") }
+
+
+
+
+{ "uid" : 19, "title" : "Smerige ghetto hits", "admin_id" : "516d0f77d89a2c1263000001", "last_user_id" : "516d0f77d89a2c1263000001", "date" : "2012-10-31 11:29:27", "public" : 1, "location_id" : 0, "place_id" : 0, "event_id" : null }

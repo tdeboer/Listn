@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Listn</title>
+	<link rel="stylesheet" type="text/css" href="/web/css/style.css" />
+	<link rel="stylesheet" type="text/css" href="/web/css/font-awesome.css" />
+	<link href='http://fonts.googleapis.com/css?family=Anaheim' rel='stylesheet' type='text/css'>
+	<script type="text/javascript" src="/web/scripts/modernizr.js"></script>
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.8.1.min.js"></script>
+	<script type="text/javascript" src="/web/scripts/dashboard_actions.js"></script>
+</head>
+	
+<body class="home">
+
+	<div class="wrapper">
+
+	    <div id="header-bar">
+	    	
+	    	<div class="logo"></div>
+	    	
+	        <div id="site-name">
+	        	<span>Listn</span>
+	        </div>
+	
+	        <div id="log-state">
+				
+				<input type="hidden" id="hidden-pl" value="" />
+				<input type="hidden" id="hidden-timestamp" value="" />
+	        </div>
+	        
+	        <a class="button forward" href="#">
+		    	<i class="icon-plus"></i>
+	    	</a>
+	        
+	    </div>
+		    
+	
+	    <div class="dashboard">
+	         
+	         <div class="playlists">
+		         <!--
+		         <div class="action-new">
+		         	<input type="text" name="titlePlaylist" id="titlePlaylist" placeholder="Title of new playlist" />
+			         <a id="btn-new" class="action large unselectable">
+			         	<i class="icon-plus"></i>
+			         	<span class="caption">New playlist</span>
+			         </a>
+		         </div>
+		         -->
+		         
+			     <div id="user-playlists">
+			    	<h2>Your playlists</h2>
+					
+					<ul>
+			    	{{#your_playlists}}
+						<a href='/playlist/{{_id}}'><li class='user-playlists list'>{{title}}</li></a>
+					{{/your_playlists}}
+					</ul>
+			    </div>
+		                
+		        <div id="all-playlists">
+		        	<h2>All playlists</h2>
+		            
+		            <ul>
+			    	{{#all_playlists}}
+						<a href='/playlist/{{_id}}'><li class='user-playlists list'>{{title}}</li></a>
+					{{/all_playlists}}
+					</ul>
+				</div>
+	         </div>
+	         
+	         <div class="updates">
+	         	<div class="stream">
+		         
+			         <h2>Last contributions</h2>
+			         
+			         <!-- updateStream -->
+			         
+	         	</div>
+		         
+	         </div>
+	        
+		</div>
+
+	
+		<div id="dialog">
+			<a id="btn-hide-dialog" class="unselectable"><i class="icon-signout"></i></a>
+			<div id="dialog-wrapper">
+				
+				<div id="new-dialog" class="dialog-content">
+					<h2>Create a new playlist</h2>
+					<input type="text" name="titlePlaylist" id="titlePlaylist" />
+					<a id="new-confirm" class="small awesome">Create</a>
+					<div class="throbber"></div>
+				</div>
+				
+				<div id="facebook-dialog" class="dialog-content">
+					<h2>Connect your playlist to a facebook event</h2>
+					<p>Your events:</p>
+					<div id="events-result">
+					<div class="radio-item"><input type="radio" name="fbgroup" value="whup" id="whup" /><label for="whup">Hopla</label></div>
+					</div>
+					<a id="facebook-confirm" class="small awesome">Connect</a>
+					<div class="throbber"></div>
+				</div>
+				
+				<div id="invite-dialog" class="dialog-content">
+					<h2>Invite others to your playlist</h2>
+					<label for="emailInvite">Invite someone by email</label><input type="text" name="email" id="emailInvite" /><br />
+					<a id="dialog-button" class="small awesome">Invite</a>
+				</div>
+				
+				<div id="settings-dialog" class="dialog-content">
+					<h2>Settings</h2>
+					<input id="publicInvite" type="checkbox" name="invite" value="public" /><label for="publicInvite">Public</label><br />
+				</div>
+				
+			</div>			
+			
+		<!-- end #dialog -->
+		</div>			
+		
+	</div>
+
+</body>
+</html>
