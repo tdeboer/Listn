@@ -1,12 +1,13 @@
-var mongo = require('mongodb');
- 
+var mongo = require('mongodb'),
+	secret = require('../resources/secret');
+
 var Server = mongo.Server,
     Db = mongo.Db,
     BSON = mongo.BSONPure;
- 
-var server = new Server('localhost', 27017, {auto_reconnect: true});
-db = new Db('listn', server);
- 
+
+var server = new Server(secret.mongodb.address, secret.mongodb.port, {auto_reconnect: true});
+db = new Db(secret.mongodb.db, server);
+
 db.open(function(err, db) {
     if(!err) {
         console.log("Connected to 'listn' database");
@@ -45,13 +46,21 @@ exports.findById = function(req, res) {
 									}
 								}
 							}
+							playlist.items = files;
 							
-				        	playlist.items = files;
-				        	res.render('playlist', playlist);
+							if (typeof req.session.passport.user !== 'undefined' ) {
+								var user_id = new BSON.ObjectID(req.session.passport.user);
+						   		collection.findOne({_id: user_id}, function(err, user) {
+						        	playlist.auth = user;
+						        	res.render('playlist', playlist);
+						        });
+				           	} else {
+					        	res.render('playlist', playlist);
+				           	}
+							
 				        });
 		           	});
 		           	
-	        		
 				});
 			});
 
@@ -65,7 +74,19 @@ exports.findAll = function(req, res) {
         collection.find().toArray(function(err, items) {
         	var data ={};
         	data.all_playlists = items;
-			res.render('home', data);
+        	
+        	if (typeof req.session.passport.user !== 'undefined' ) {
+           		db.collection('users', function(err, collection) {
+					var user_id = new BSON.ObjectID(req.session.passport.user);
+			   		collection.findOne({_id: user_id}, function(err, user) {
+			        	data.auth = user;
+		           		console.log(data.auth);
+			        	res.render('home', data);
+			        });
+			   	});
+           	} else {
+	        	res.render('home', data);  	
+           	}
         });
     });
 };
@@ -181,6 +202,7 @@ exports.addItem = function(req, res) {
 	}
 	
 };
+
 
 
 /*

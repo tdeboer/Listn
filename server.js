@@ -6,6 +6,7 @@ var express = require('express'),
 	io = require('socket.io').listen(server),
 	passport = require('passport'),
 	FacebookStrategy = require('passport-facebook').Strategy,
+	secret = require('./resources/secret'),
 	BSON = require('mongodb').BSONPure;
 
 // config
@@ -19,37 +20,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(app.router);
 
-/*
-io.sockets.on('connection', function (socket) {
-	socket.emit('news', { hello: 'world' });
-	socket.on('my other event', function (data) {
-		console.log(data);
-	});
-});
-*/
-
-// routes
-app.get('/', playlists.findAll);
-app.get('/playlist/:id', playlists.findById);
-app.post('/playlist', playlists.addPlaylist);
-app.put('/playlist/:id', playlists.updatePlaylist);
-app.delete('/playlist/:id', playlists.deletePlaylist);
-app.post('/playlist/:id/item', playlists.addItem);
-
-
-// auth
-app.get('/auth/facebook', passport.authenticate('facebook'));
-app.get('/auth/facebook/callback',
-	passport.authenticate('facebook', { failureRedirect: '/login' }),
-	function(req, res) {
-		res.redirect('/'); // remember where user came from and redirect there
-	}
-);
-
-
 passport.use(new FacebookStrategy({
-		clientID: 350892571642553,
-		clientSecret: "483b8d6eb4d9b57589f110ab6c454771",
+		clientID: secret.facebook.clientID,
+		clientSecret: secret.facebook.clientSecret,
 		callbackURL: "http://www.listn.nl/auth/facebook/callback"
 	},
 	function(accessToken, refreshToken, profile, done) {
@@ -71,7 +44,7 @@ passport.use(new FacebookStrategy({
 				     	return done(err);
 			        }
 			        else {
-			        	console.dir(object);  // undefined if no matching object exists.
+			        	console.dir(object);
 			        	done(null, object);
 			        }
 			    }
@@ -80,6 +53,34 @@ passport.use(new FacebookStrategy({
 	    
 	}
 ));
+
+
+/*
+io.sockets.on('connection', function (socket) {
+	socket.emit('news', { hello: 'world' });
+	socket.on('my other event', function (data) {
+		console.log(data);
+	});
+});
+*/
+
+// routes
+app.get('/', playlists.findAll);
+app.get('/playlist/:id', playlists.findById);
+app.post('/playlist', playlists.addPlaylist);
+app.put('/playlist/:id', playlists.updatePlaylist);
+app.delete('/playlist/:id', playlists.deletePlaylist);
+app.post('/playlist/:id/item', playlists.addItem);
+
+
+// authentication
+app.get('/auth/facebook', passport.authenticate('facebook'));
+app.get('/auth/facebook/callback',
+	passport.authenticate('facebook', { failureRedirect: '/login' }),
+	function(req, res) {
+		res.redirect('/'); // remember where user came from and redirect there
+	}
+);
 
 
 passport.serializeUser(function(user, done) {
@@ -102,7 +103,7 @@ passport.deserializeUser(function(id, done) {
 
 
 app.get('/login', function(req, res) {
-    res.render('home', data);
+    res.render('home');
 });
 
 

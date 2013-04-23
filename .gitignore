@@ -3,3 +3,4 @@ config.php
 .project
 .settings/
 .DS_Store
+/resources/secret.js

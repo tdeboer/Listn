@@ -26,6 +26,13 @@
 	
 	        <div id="log-state">
 				
+				{{#auth}}
+					Hi {{auth.username}}!
+				{{/auth}}
+				{{^auth}}
+					<a href="/auth/facebook"><i class="icon-facebook-sign"></i> Login with Facebook</a>
+				{{/auth}}
+				
 				<input type="hidden" id="hidden-pl" value="" />
 				<input type="hidden" id="hidden-timestamp" value="" />
 	        </div>
