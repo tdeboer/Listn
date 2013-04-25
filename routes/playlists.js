@@ -21,7 +21,8 @@ db.open(function(err, db) {
 
 
 exports.findById = function(req, res) {
-    var id = req.params.id;
+    var id = req.params.id,
+    	item = req.params.item;
     console.log('Retrieving playlist: ' + id);
     
     db.collection('playlists', function(err, collection) {
@@ -46,6 +47,10 @@ exports.findById = function(req, res) {
 									if (files[i].user_id == users[j]._id) {
 										files[i].contributor = users[j].username;
 									}
+								}
+								
+								if (typeof item !== 'undefined' && item == files[i]._id) {
+									files[i].current = true;
 								}
 							}
 							playlist.items = files;

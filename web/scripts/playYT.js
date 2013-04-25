@@ -90,8 +90,13 @@ define(['youtube', 'socket', 'jqueryui', 'scrollbar', 'timeago'], function (YT, 
 	
 	function onPlayerReady() {devLog('onreadycalled');
 		if (playlist.length > 0) {
-			playYT();
+			var start_item = $('.item.start');
+			if (start_item.length > 0) {
+				var video_id = start_item.data('video');
+				needle = $.inArray(video_id, playlist);
+			}
 		}
+		playYT();
 	}
 	
 	function onytplayerStateChange(event) {

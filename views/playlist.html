@@ -105,7 +105,7 @@
 							<div class="overview">
 								<div id="userPlaylist">
 									{{#items}}
-									<li class="item" id="{{_id}}" data-video="{{file_id}}">
+									<li class="item{{#current}} start{{/current}}" id="{{_id}}" data-video="{{file_id}}">
 										<div class="image">
 											<img src="{{image}}" height="50" />
 										</div>
