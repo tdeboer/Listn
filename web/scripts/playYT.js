@@ -1,280 +1,299 @@
 /* TODO:
  * OOP approach: playlist is object with options ( * Gather vars in one object. Functions > methods also?)
  * Make seperate js file for home
- * Make delete function
- * username is not visible
  * 
  */
-
-var log = true;
-var playlist_id;
-var playlist = [];
-var params = { 
-	allowScriptAccess: "always",
-	wmode: "opaque"
-};
-var playerState; // unstarted (-1), ended (0), playing (1), paused (2), buffering (3), video cued (5)
-var atts = {
-	id: "myytplayer"
-};
-var needle = 0;
-var stopScrubber = false;
-var done;
-var intervalScrubber;
-var dialogVisible = false;
-var currentDialog;
-var ytplayer;
-var repeat;
-var checkedUpdates = false;
-var pl_width,pl_height,pl_scroll,pl_scroll2;
-
-var settings = {
-	autoplay: 1
-}
+define(['youtube', 'socket', 'jqueryui', 'scrollbar', 'timeago'], function (YT, io) {
 
 
-/*
- * Youtube API
- */
-function playYT() {
-	if (needle < playlist.length) {
-		devLog("Now playing: " + playlist[needle]);
-		intervalScrubber = clearInterval(intervalScrubber);
-		if (ytplayer) {
-			ytplayer.loadVideoById( playlist[needle] );
-		} else {
-			devLog('Error: Youtube api not loaded!');
-			setTimeout(
-				function() { 
-					//ytplayer.loadVideoById( playlist[needle] );
-					onPlayerReady();
-				},
-				500
-			);
+
+	var log = true;
+	var playlist_data = {};
+	var playlist = [];
+	var params = { 
+		allowScriptAccess: "always",
+		wmode: "opaque"
+	};
+	var playerState; // unstarted (-1), ended (0), playing (1), paused (2), buffering (3), video cued (5)
+	var atts = {
+		id: "myytplayer"
+	};
+	var needle = 0;
+	var stopScrubber = false;
+	var done;
+	var intervalScrubber;
+	var dialogVisible = false;
+	var currentDialog;
+	var ytplayer;
+	var repeat;
+	var checkedUpdates = false;
+	var pl_width,pl_height,pl_scroll,pl_scroll2;
+	
+	var settings = {
+		autoplay: 1
+	}
+	
+	
+	/*
+	 * Youtube API
+	 */
+	function playYT() {
+		if (needle < playlist.length) {
+			devLog("Now playing: " + playlist[needle]);
+			intervalScrubber = clearInterval(intervalScrubber);
+			if (ytplayer) {
+				ytplayer.loadVideoById( playlist[needle] );
+			} else {
+				devLog('Error: Youtube api not loaded!');
+				setTimeout(
+					function() {
+						onPlayerReady();
+					},
+					500
+				);
+			}
+			
+			done = false;
+			$( ".item.highlight" ).removeClass("highlight");
+			$( ".item:eq(" + needle + ")" ).addClass("highlight");
+			$('#playButton').children("i").removeClass('icon-play');
+			$('#playButton').children("i").addClass('icon-pause');
+			followCurrentItem();
+		} else if (repeat) {
+			needle = 0;
+			playYT();
 		}
+	}
+	
+	function onYouTubeIframeAPIReady() {devLog('iFrame ready');
+		//todo: stop autoplay for Modernizr.touch
+		ytplayer = new YT.Player('player', {
+			width: 425,
+			height: 356,
+			playerVars: {
+				'autoplay': 0,
+				'controls': 0,
+				'rel': 0,
+				'showinfo': 0,
+				'enablejsapi': 1,
+				'modestbranding': 1,
+				'origin': 'http://www.listn.nl/',
+				'wmode': 'opaque'
+			},
+			events: {
+				'onReady': onPlayerReady,
+				'onError': onytplayerError,
+				'onStateChange': onytplayerStateChange
+			}
+	    });
+	}
+	
+	function onPlayerReady() {devLog('onreadycalled');
+		if (playlist.length > 0) {
+			playYT();
+		}
+	}
+	
+	function onytplayerStateChange(event) {
+		playerState = event.data;
+		devLog('Event: ' + event.data);
+		if (event.data == 1) {
+			intervalScrubber = clearInterval(intervalScrubber);
+			intervalScrubber = setInterval(updateScrubber, 200);
+			$( "#slider-range-min" ).slider({ max: ytplayer.getDuration()*10 });
+		} else if (event.data == 2) {
+			intervalScrubber = clearInterval(intervalScrubber);
+		} else if (event.data == 0 && !done) {
+			intervalScrubber = clearInterval(intervalScrubber);
+			done = true;
+			needle++;
+			//checkUpdates(true); EXPRESS
+			playYT();
+		}
+	}
+	
+	function onytplayerError(error) {
+		devLog("Error: " + error);
 		
-		done = false;
-		$( ".item.highlight" ).removeClass("highlight");
-		$( ".item:eq(" + needle + ")" ).addClass("highlight");
-		$('#playButton').children("i").removeClass('icon-play');
-		$('#playButton').children("i").addClass('icon-pause');
-	} else if (repeat) {
-		needle = 0;
-		playYT();
-	}
-}
-
-function onYouTubeIframeAPIReady() {devLog('iFrame ready');
-	//todo: stop autoplay for Modernizr.touch
-	ytplayer = new YT.Player('player', {
-		width: 425,
-		height: 356,
-		playerVars: {
-			'autoplay': 0,
-			'controls': 0,
-			'rel': 0,
-			'showinfo': 0,
-			'enablejsapi': 1,
-			'modestbranding': 1,
-			'origin': 'http://www.listn.nl/',
-			'wmode': 'opaque'
-		},
-		events: {
-			'onReady': onPlayerReady,
-			'onError': onytplayerError,
-			'onStateChange': onytplayerStateChange
-		}
-    });
-}
-
-function onPlayerReady() {devLog('onreadycalled');
-	if (playlist.length > 0) {
-		playYT();
-	}
-}
-
-function onytplayerStateChange(event) {
-	playerState = event.data;
-	devLog('Event: ' + event.data);
-	if (event.data == 1) {
-		intervalScrubber = clearInterval(intervalScrubber);
-		intervalScrubber = setInterval("updateScrubber()", 200);
-		$( "#slider-range-min" ).slider({ max: ytplayer.getDuration()*10 });
-	} else if (event.data == 2) {
-		intervalScrubber = clearInterval(intervalScrubber);
-	} else if (event.data == 0 && !done) {
+		// invalid file
 		intervalScrubber = clearInterval(intervalScrubber);
 		done = true;
-		needle++;
+		$(".item:eq(" + needle + ") .dur").html('<i class="icon-exclamation-sign" alt="Skipped"></i>');
+		$(".item:eq(" + needle + ") > .icon-remove-sign").show();
+		if(playlist.length >= 1) needle++;
 		//checkUpdates(true); EXPRESS
 		playYT();
 	}
-}
-
-function onytplayerError(error) {
-	devLog("Error: " + error);
 	
-	// invalid file
-	intervalScrubber = clearInterval(intervalScrubber);
-	done = true;
-	$(".item:eq(" + needle + ") > .icon-exclamation-sign").show();
-	if(playlist.length >= 1) needle++;
-	//checkUpdates(true); EXPRESS
-	playYT();
-}
-
-
-
-function updateScrubber() {
-	var pass = ytplayer.getPlayerState();
-	if (pass == 1) {
-		var duration = ytplayer.getDuration( );
-		var durationMinutes = Math.floor( duration/60 );
-		var durationSeconds = Math.ceil( duration%60 );
-		var current = ytplayer.getCurrentTime();
-		var currentMinutes = Math.floor( current/60 );
-		var currentSeconds = Math.ceil( current%60 ) <  10 ? "0" + Math.ceil( current%60 ) : Math.ceil( current%60 );
-		var progress = current/duration*100;
-		if (!stopScrubber) {
-			$('#slider-range-min').slider( "value", current*10 );
+	
+	
+	function updateScrubber() {
+		var pass = ytplayer.getPlayerState();
+		if (pass == 1) {
+			var duration = ytplayer.getDuration( );
+			var durationMinutes = Math.floor( duration/60 );
+			var durationSeconds = Math.ceil( duration%60 );
+			var current = ytplayer.getCurrentTime();
+			var currentMinutes = Math.floor( current/60 );
+			var currentSeconds = Math.ceil( current%60 ) <  10 ? "0" + Math.ceil( current%60 ) : Math.ceil( current%60 );
+			var progress = current/duration*100;
+			if (!stopScrubber) {
+				$('#slider-range-min').slider( "value", current*10 );
+			}
+			$('#marker-time').text(currentMinutes + ':' + currentSeconds);
+			$('#total-time').text(durationMinutes + ':' + durationSeconds);
+			if (current >= 60 && !checkedUpdates) {
+				//checkUpdates(false); EXPRESS
+				checkedUpdates = true;
+			}
 		}
-		$('#marker-time').text(currentMinutes + ':' + currentSeconds);
-		$('#total-time').text(durationMinutes + ':' + durationSeconds);
-		if (current >= 60 && !checkedUpdates) {
-			//checkUpdates(false); EXPRESS
-			checkedUpdates = true;
+	};
+	
+	
+	function followCurrentItem() {
+		var view_height = $('#scrollbar1 .viewport').height();
+		var top_current = $('#scrollbar1 .highlight').position().top;
+		var item_height = $('#scrollbar1 .highlight').height();
+		var list_height = $('#scrollbar1 .overview').height();
+		var top_list = $('#scrollbar1 .overview').position().top;
+		var new_current = top_current + top_list;
+
+		if ( new_current > 0.8*view_height && top_current < list_height - view_height ) {
+			pl_scroll.tinyscrollbar_update(top_current - 2*item_height);
 		}
 	}
-};
-
-
-
-/*
- * Pubsub (faking)
- */
-/* EXPRESS
-function checkUpdates(betweenSongs) { // todo: check- and get-update should be one backend request, move logic to backend
-	var hiddenTimestamp = $('#hidden-timestamp').val();
-	var playlist_id = $('#hidden-pl').val();
-	$.post("requests.php", {
-		request: "check_update",
-		pl_id: playlist_id
-		},
-		function (data) 
-		{
-			devLog("Current:" + hiddenTimestamp + " Update: " + data);
-			if (data == hiddenTimestamp || hiddenTimestamp.length == 0) {
-				devLog('173: No new files');
-				if (betweenSongs) {
-					playYT(); // TODO: extra check if there is something to play?
-					checkedUpdates = false;
+		
+	
+	/*
+	 * Pubsub (faking)
+	 */
+	/* EXPRESS
+	function checkUpdates(betweenSongs) { // todo: check- and get-update should be one backend request, move logic to backend
+		var hiddenTimestamp = $('#hidden-timestamp').val();
+		var playlist_id = $('#hidden-pl').val();
+		$.post("requests.php", {
+			request: "check_update",
+			pl_id: playlist_id
+			},
+			function (data) 
+			{
+				devLog("Current:" + hiddenTimestamp + " Update: " + data);
+				if (data == hiddenTimestamp || hiddenTimestamp.length == 0) {
+					devLog('173: No new files');
+					if (betweenSongs) {
+						playYT(); // TODO: extra check if there is something to play?
+						checkedUpdates = false;
+					}
+				} else {
+					// get the new files
+					getUpdates(hiddenTimestamp, playlist_id, betweenSongs);
 				}
-			} else {
-				// get the new files
-				getUpdates(hiddenTimestamp, playlist_id, betweenSongs);
-			}
-		},
-		"json");
-}
-
-function getUpdates(hiddenTimestamp, playlist_id, betweenSongs) {
-	$.post("requests.php", {
-		request: "get_update",
-		pl_id: playlist_id,
-		time: hiddenTimestamp
-		},
-		function (data) 
-		{
-			// append to playlist
-			var songs = data.posts;
-			for (var i = 0; i < songs.length; ++i) {
-				var title = data.posts[i].title;
-				var file = data.posts[i].file;
-				var image = data.posts[i].image;
-				var dur = data.posts[i].duration;
-				var contributor = data.posts[i].user;
-				var date = data.posts[i].date;
-				$('#userPlaylist').append( itemBlock(title, file, image, dur, contributor, date ) );
-			}
-			
-			$('#hidden-timestamp').val(data.timestamp);
-			
-			// Update plugins
+			},
+			"json");
+	}
+	
+	function getUpdates(hiddenTimestamp, playlist_id, betweenSongs) {
+		$.post("requests.php", {
+			request: "get_update",
+			pl_id: playlist_id,
+			time: hiddenTimestamp
+			},
+			function (data) 
+			{
+				// append to playlist
+				var songs = data.posts;
+				for (var i = 0; i < songs.length; ++i) {
+					var title = data.posts[i].title;
+					var file = data.posts[i].file;
+					var image = data.posts[i].image;
+					var dur = data.posts[i].duration;
+					var contributor = data.posts[i].user;
+					var date = data.posts[i].date;
+					$('#userPlaylist').append( itemBlock(title, file, image, dur, contributor, date ) );
+				}
+				
+				$('#hidden-timestamp').val(data.timestamp);
+				
+				// Update plugins
+				pl_scroll.tinyscrollbar_update();
+				$("abbr.timeago").timeago();
+				
+				if (betweenSongs) {
+					//TODO: inside onready scope
+					playYT(); // TODO: extra check if there is something to play?
+				}
+			},
+			"json");
+	}
+	*/
+	
+	
+	
+	/* EXPRESS
+	function itemBlock(title, file, image, duration, contributor, date) {
+		var itemMinutes = Math.floor( duration/60 );
+		var itemSeconds = Math.ceil( duration%60 ) <  10 ? "0" + Math.ceil( duration%60 ) : Math.ceil( duration%60 );
+		var itemDur = itemMinutes + ':' + itemSeconds;
+		playlist.push(file);
+		if(typeof image !== 'undefined' && image.length) {
+			imageElement = '<img src="' + image + '" height="50" />';
+		} else {
+			imageElement = '';
+		}
+		return '<li class="item" id="' + file + '"><div class="image">' + imageElement + '</div><div class="text"><div class="dur">' + itemDur + '</div><div class="title">' + title + '</div><div class="comment">Added by ' + contributor + ' <abbr class="timeago" title="' + date + '">' + date + '</abbr></div></div><i class="icon-exclamation-sign" alt="Skipped"></i></li>';
+	}
+	*/
+	
+	
+	function initScrollBar() {
+		pl_width = $('.playlist').width();
+	    $('#scrollbar1').width(pl_width-6);
+	    $('#scrollbar1 > .viewport').width(pl_width-19);
+	    pl_height = $('.playlist').height();
+	    $('#scrollbar1 > .viewport').height(pl_height-12);
+	    pl_scroll = $('#scrollbar1');
+	    pl_scroll.tinyscrollbar({ invertscroll: true });
+	    pl_scroll2 = $('#scrollbar2');
+	    pl_scroll2.tinyscrollbar({ invertscroll: true });
+	    
+	    $(window).resize(function() {
+			pl_width = $('.playlist').width();
+			$('#scrollbar1').width(pl_width-6);
+			$('#scrollbar1 > .viewport').width(pl_width-19);
+			pl_height = $('.playlist').height();
+			$('#scrollbar1 > .viewport').height(pl_height-12);
 			pl_scroll.tinyscrollbar_update();
-			$("abbr.timeago").timeago();
-			
-			if (betweenSongs) {
-				//TODO: inside onready scope
-				playYT(); // TODO: extra check if there is something to play?
-			}
-		},
-		"json");
-}
-*/
-
-
-
-/* EXPRESS
-function itemBlock(title, file, image, duration, contributor, date) {
-	var itemMinutes = Math.floor( duration/60 );
-	var itemSeconds = Math.ceil( duration%60 ) <  10 ? "0" + Math.ceil( duration%60 ) : Math.ceil( duration%60 );
-	var itemDur = itemMinutes + ':' + itemSeconds;
-	playlist.push(file);
-	if(typeof image !== 'undefined' && image.length) {
-		imageElement = '<img src="' + image + '" height="50" />';
-	} else {
-		imageElement = '';
+		});
 	}
-	return '<li class="item" id="' + file + '"><div class="image">' + imageElement + '</div><div class="text"><div class="dur">' + itemDur + '</div><div class="title">' + title + '</div><div class="comment">Added by ' + contributor + ' <abbr class="timeago" title="' + date + '">' + date + '</abbr></div></div><i class="icon-exclamation-sign" alt="Skipped"></i></li>';
-}
-*/
-
-
-function initScrollBar() {
-	pl_width = $('#playlist').width();
-    $('#scrollbar1').width(pl_width-6);
-    $('#scrollbar1 > .viewport').width(pl_width-19);
-    pl_height = $('#playlist').height();
-    $('#scrollbar1 > .viewport').height(pl_height-12);
-    pl_scroll = $('#scrollbar1');
-    pl_scroll.tinyscrollbar({ invertscroll: true });
-    pl_scroll2 = $('#scrollbar2');
-    pl_scroll2.tinyscrollbar({ invertscroll: true });
-    
-    $(window).resize(function() {
-		pl_width = $('#playlist').width();
-		$('#scrollbar1').width(pl_width-6);
-		$('#scrollbar1 > .viewport').width(pl_width-19);
-		pl_height = $('#playlist').height();
-		$('#scrollbar1 > .viewport').height(pl_height-12);
-		pl_scroll.tinyscrollbar_update();
-	});
-}
-
-
-/*
- * Log
- */
-function devLog(message) {
-	if (log == true) {
-		console.log(message);
+	
+	
+	/*
+	 * Log
+	 */
+	function devLog(message) {
+		if (log == true) {
+			console.log(message);
+		}
 	}
-}
+	
+	
+	
+	  
 
-
-
-  
-$(document).ready (function() {
 	throbber($('.overview'), 'show');
 
-	initPlaylist();
+	initApp();
 	
-	function initPlaylist() {
+	function initApp() {
 		$("abbr.timeago").timeago();
 		//setSettings( $('#hidden-pl').val() ); EXPRESS
 		$('#userPlaylist .item').each(function() {
-			playlist.push( $(this).attr('id') );	
+			playlist.push( $(this).data('video') );	
 		});
+		
+		onYouTubeIframeAPIReady();
+		
+		playlist_data.id = $('.playlist').attr('id');
 		
 		// play item from url
 		/* EXPRESS
@@ -470,7 +489,7 @@ $(document).ready (function() {
 	
 	
 	function connectEvent(eventId) {
-		var playlist_id = $('#hidden-pl').val(); //TODO: make javascript var. As well for timestamp
+		//var playlist_id = $('#hidden-pl').val(); //TODO: make javascript var. As well for timestamp
 		throbber($('#facebook-dialog'), 'show');
 		$.post("requests.php", {
 			request: "connect_event",
@@ -511,6 +530,25 @@ $(document).ready (function() {
 			type: "DELETE",
 			success: function(data) {
 				window.location = '/';
+			},
+			error: function(jqXHR, textStatus, errorThrown) {
+				notAuth(errorThrown);
+			}
+		});
+	});
+	
+	
+	$('.item .icon-remove-sign').click(function() {
+		var el = $(this).parents('.item'),
+			item_id = el.attr('id'),
+			video_id = el.data('video');
+			
+		$.ajax({
+			type: "DELETE",
+			url: "/playlist/" + playlist_data.id + "/item/" + item_id,
+			success: function(data) {
+				playlist.splice( $.inArray(video_id, playlist), 1 );
+				el.remove();
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
 				notAuth(errorThrown);
@@ -612,7 +650,7 @@ $( ".input-prepend" ).focusout(function() {
 	});
 	
 	$('#userPlaylist').delegate('.item', 'click', function () {
-		var gotoId = $(this).attr('id');
+		var gotoId = $(this).data('video');
 		needle = $.inArray(gotoId, playlist);
 		playYT();
 	});
@@ -862,11 +900,10 @@ $( ".input-prepend" ).focusout(function() {
 		var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
 		document.cookie=c_name + "=" + c_value;
 	}
+		
 	
 	
+	return this;
 
-	
- // end document.ready function.
+
 });
-
-

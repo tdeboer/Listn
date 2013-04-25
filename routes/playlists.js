@@ -36,6 +36,8 @@ exports.findById = function(req, res) {
 						return itemMinutes + ':' + itemSeconds;
 		           	};
 		           	
+		           	playlist.id = id;
+		           	
 		           	db.collection('users', function(err, collection) {
 		           		collection.find().toArray(function(err, users) {
 				        	
@@ -203,6 +205,33 @@ exports.addItem = function(req, res) {
 	
 };
 
+
+exports.deleteItem = function(req, res) {
+	
+	if (typeof req.session.passport.user !== 'undefined' ) {
+		
+		var id = req.params.id,
+			item = req.params.item;
+	    console.log('Deleting item: ' + item + ' from ' + id);
+
+	    db.collection('files', function(err, collection) {
+	        collection.remove({'_id':new BSON.ObjectID(item)}, {safe:true}, function(err, result) {
+	            if (err) {
+	                res.send({'error':'An error has occurred - ' + err});
+	            } else {
+	                console.log('' + result + ' document(s) deleted');
+	                res.send(req.body);
+	            }
+	        });
+	    });
+	    
+	} else {
+	
+		res.send(401, 'Unauthorized!');
+			
+	}
+
+};
 
 
 /*

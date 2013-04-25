@@ -71,6 +71,7 @@ app.post('/playlist', playlists.addPlaylist);
 app.put('/playlist/:id', playlists.updatePlaylist);
 app.delete('/playlist/:id', playlists.deletePlaylist);
 app.post('/playlist/:id/item', playlists.addItem);
+app.delete('/playlist/:id/item/:item', playlists.deleteItem);
 
 
 // authentication
