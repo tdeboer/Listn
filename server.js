@@ -37,7 +37,7 @@ passport.use(new FacebookStrategy({
 	    
 	    db.collection('users', function(err, collection) {
 	    
-	    	collection.findAndModify({fbid: profile.id}, [], {$set: fbUser}, {upsert:true},
+	    	collection.findAndModify({fbid: profile.id}, [], {$set: fbUser}, {upsert:true, new:true},
 	            function(err, object) {
 			        if (err) {
 				     	console.warn(err.message);
