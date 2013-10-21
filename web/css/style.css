@@ -46,7 +46,10 @@ table {
 	border-collapse: collapse;
 	border-spacing: 0;
 }
-
+/* and some custom resets */
+button {
+	margin: 0;
+}
 
 
 body {
@@ -59,6 +62,10 @@ body {
 	overflow: hidden;
 }
 
+body.home {
+	overflow-y: auto;
+}
+
 h1 {
 	font: 1.6em/1.2em 'Anaheim', sans-serif;
 	margin: 0;
@@ -66,6 +73,11 @@ h1 {
 
 a {
 	color: #fff;
+}
+
+.link {
+	text-decoration: underline;
+	cursor: pointer;
 }
 
 .wrapper {
@@ -288,6 +300,10 @@ h2 {
 	float: left;
 }
 
+.item .text .title {
+	max-width: 90%;
+}
+
 .item .text .dur {
 	float: right;
 }
@@ -314,7 +330,6 @@ h2 {
 }
 
 .item .icon-remove-sign {
-	display: none;
 	position: absolute;
 	bottom: 0;
 	right: 3px;
@@ -486,6 +501,7 @@ h2 {
 	border: 1px solid #777;
 	background-color: #5f5f5f;
 	text-decoration: none;
+	color: #fff;
 	cursor: pointer;
 	font: 14px/22px 'Helvetica Neue', Helvetica, Verdana, sans-serif;
 	padding: 1px 6px;
@@ -495,6 +511,29 @@ h2 {
 .action:hover {
 	border-color: #aaa;
 	background-color: #888;
+}
+
+.action.loading:hover {
+	border-color: #777;
+	background-color: #5f5f5f;
+}
+
+.action:active {
+	position: relative;
+	top: 1px;
+}
+
+.action.loading {
+	-webkit-animation: loading 0.5s infinite alternate;
+}
+
+@-webkit-keyframes loading {
+  0% {
+    color: #fff;
+  }
+  100% {
+    color: #fc0;
+  }
 }
 
 .action.large {
@@ -523,24 +562,62 @@ h2 {
 .wrapper #dialog {
 	width: 280px;
 	left: 100%;
-	top: 42px;
+	top: 94px;
 	padding: 0;
 	margin-left: 12px;
 }
 
 #dialog-wrapper {
 	overflow-y: auto;
-	margin-right: 12px;
-	padding: 24px 12px 12px;
+	padding: 6px 12px 12px;
 }
 
 .dialog-content {
 	display: none;
 }
 
+.dialog-content .setting {
+	margin-bottom: 24px;
+}
+
+.dialog-content .setting h3 {
+	padding: 4px;
+	background-color: #4D4D4D;
+}
+
+.dialog-content .setting h3 i {
+	float: right;
+	margin-right: 4px;
+}
+
+.dialog-content .setting fieldset {
+	margin-bottom: 12px;
+}
+
+.dialog-content .setting .info {
+	display: none;
+	font-size: 14px;
+	background-color: #4D4D4D;
+	padding: 4px;
+}
+
+.dialog-content .setting .message {
+	display: none;
+	background-color: #FC0;
+	color: #333;
+	padding: 4px;
+	border-radius: 4px;
+	margin-top: 6px;
+}
+
+.dialog-content .setting form {
+	margin-top: 6px;
+}
+
 #btn-hide-dialog {
 	padding: 6px;
 	position: absolute;
+	right: 0;
 }
 
 .dialog-buttons {
@@ -599,19 +676,6 @@ h2 {
 
 .radio-item input {
 	margin-right: 6px;
-}
-
-
-
-/* 
- * Facebook
- */
-#facebook a {
-	color: #FC0;
-}
-
-.fb_iframe_widget a {
-	color: #FC0 !important;
 }
 
 
@@ -738,11 +802,12 @@ h2 {
 	float: right;
 	width: 18px;
 	height: 18px;
-	margin: 18px;
+	margin: 12px;
 	position: absolute;
 	bottom: 0;
 	right: 0;
 }
+
 @media (min--moz-device-pixel-ratio: 1.5), (-o-min-device-pixel-ratio: 3 / 2), (-webkit-min-device-pixel-ratio: 1.5), (min-resolution: 1.5dppx) {
 	.brand {
 		background: url("../gfx/logo-bsc@2x.png") no-repeat;
@@ -751,4 +816,13 @@ h2 {
 		-o-background-size: 18px;
 		background-size: 18px;
 	}
+}
+
+.facebook-logout {
+	display: none;
+}
+
+.fs-settings,
+.fs-fb-plugin {
+	display: none;
 }

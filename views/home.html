@@ -13,6 +13,35 @@
 </head>
 	
 <body class="home">
+	
+	<div id="fb-root"></div>
+	<script>
+	window.fbAsyncInit = function() {
+		// init the FB JS SDK
+		FB.init({
+			appId      : {{fb_app_id}},                        // App ID from the app dashboard
+			channelUrl : '//www.listn.nl/channel',        // Channel file for x-domain comms
+			status     : true,                                 // Check Facebook Login status
+			xfbml      : true                                  // Look for social plugins on the page
+		});
+		
+		FB.Event.subscribe('auth.authResponseChange', function(response) {
+			//storeUser(response);
+			$('#log-state .facebook-login').remove();
+			$('#log-state .facebook-logout').show();
+		});
+	};
+		
+	// Load the SDK asynchronously
+	(function(d, s, id) {
+		 var js, fjs = d.getElementsByTagName(s)[0];
+		 if (d.getElementById(id)) {return;}
+		 js = d.createElement(s); js.id = id;
+		 js.src = "//connect.facebook.net/en_US/all.js";
+		 fjs.parentNode.insertBefore(js, fjs);
+	}(document, 'script', 'facebook-jssdk'));
+	</script>
+
 
 	<div class="wrapper">
 
@@ -30,8 +59,13 @@
 					Hi {{auth.username}}!
 				{{/auth}}
 				{{^auth}}
-					<a href="/auth/facebook"><i class="icon-facebook-sign"></i> Login with Facebook</a>
+					<a href="/auth/facebook" id="fb-login"><i class="icon-facebook-sign"></i> Login with Facebook</a>
 				{{/auth}}
+				
+				<div class="fs-fb-plugin">
+					<button class="facebook-login"><i class="icon-facebook-sign"></i> Login with Facebook</button>
+					<button class="facebook-logout"><i class="icon-facebook-sign"></i> Logout</button>
+				</div>
 				
 				<input type="hidden" id="hidden-pl" value="" />
 				<input type="hidden" id="hidden-timestamp" value="" />
@@ -81,9 +115,11 @@
 	         <div class="updates">
 	         	<div class="stream">
 		         
-			         <h2>Last contributions</h2>
+			         <h2>Last added</h2>
 			         
-			         <!-- updateStream -->
+			         {{#last_added}}
+			         	<iframe class="youtube-player" type="text/html" width="100%" height="200" src="http://www.youtube.com/embed/{{file_id}}" allowfullscreen frameborder="0"></iframe>
+			         {{/last_added}}
 			         
 	         	</div>
 		         
@@ -92,7 +128,8 @@
 		</div>
 
 	
-		<div id="dialog">
+		<!--
+<div id="dialog">
 			<a id="btn-hide-dialog" class="unselectable"><i class="icon-signout"></i></a>
 			<div id="dialog-wrapper">
 				
@@ -126,8 +163,9 @@
 				
 			</div>			
 			
-		<!-- end #dialog -->
-		</div>			
+
+		</div>	
+-->		
 		
 	</div>
 

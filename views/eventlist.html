@@ -1,0 +1,26 @@
+{{#hasEvents}}
+	<fieldset form="facebook">
+		<div id="events-result">
+			<p>Your Facebook events:</p>
+			<ul>
+{{/hasEvents}}
+
+{{#events}}
+				<li>
+					<div>
+						<input type="radio" name="fb-connected-event" id="event-{{id}}" value="{{id}}">
+						<label for="event-{{id}}">{{name}}</label>
+					</div>
+				</li>
+{{/events}}
+
+{{#hasEvents}}
+			</ul>
+		</div>
+	</fieldset>
+	<a id="facebook-confirm" class="action" data-action="Connecting...">Connect</a>
+{{/hasEvents}}
+
+{{^events}}
+	<p>You don't have upcoming events.</p>
+{{/events}}

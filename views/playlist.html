@@ -9,16 +9,6 @@
 	<link href='http://fonts.googleapis.com/css?family=Anaheim' rel='stylesheet' type='text/css'>
 	<script type="text/javascript" src="/web/scripts/modernizr.js"></script>
 	<script data-main="/web/scripts/main" src="/web/scripts/require-jquery.js"></script>
-	<!--
-	<script src="/socket.io/socket.io.js"></script>
-	<script>
-		var socket = io.connect('http://listn.nl:3000');
-		socket.on('news', function (data) {
-			console.log(data);
-			socket.emit('my other event', { my: 'data' });
-		});
-	</script>
-	-->
 </head>
 	
 <body>
@@ -35,25 +25,23 @@
 	    	
 	        <div id="site-name">
 	        	<span>Listn - {{title}}</span>
+	        	<!-- <a id="test-knop" class="action" data-action="Disconnecting...">Disconnect</a> -->
 	        </div>
 	
 	        <div id="log-state">
-	        	
 	        	{{#auth}}
 					Hi {{username}}!
 				{{/auth}}
 				{{^auth}}
 					<a href="/auth/facebook"><i class="icon-facebook-sign"></i> Login with Facebook</a>
 				{{/auth}}
-				
-				<input type="hidden" id="hidden-pl" value="{{uid}}" />
-				<input type="hidden" id="hidden-timestamp" value="{{time}}" />
-				<input type="hidden" id="hidden-item" value="{{item}}" />
 	        </div>
 	        
+<!--
 	        <a id="btn-settings" class="button forward" href="#">
 		    	<i class="icon-cog"></i>
 	    	</a>
+-->
 	        
 	    </div>
 	
@@ -66,10 +54,12 @@
 	        	<i class="icon-plus"></i>
 	        	<span class="caption">New playlist</span>
 	        </a>
-	        <a id="btn-event" class="action unselectable">
-	        	<i class="icon-facebook-sign"></i>
-	        	<span class="caption">Event</span>
-	        </a>
+	        {{#admin}}
+				<a id="btn-settings" class="action unselectable">
+		        	<i class="icon-cog"></i>
+		        	<span class="caption">Settings</span>
+		        </a>
+			{{/admin}}
 	        <!--
 	        	<a id="btn-invite" class="action unselectable"><i class="icon-envelope"></i>Invite</a>
 	        	<a id="btn-settings" class="action"><i class="icon-cog"></i>Settings</a>
@@ -114,7 +104,9 @@
 											<div class="title">{{file_name}}</div>
 											<div class="comment">Added by {{contributor}} <abbr class="timeago" title="{{date}}">{{date}}</abbr></div>
 										</div>
-										<i class="icon-remove-sign" alt="Delete"></i>
+										{{#removable}}
+											<i class="icon-remove-sign" alt="Delete"></i>
+										{{/removable}}
 									</li>
 									{{/items}}
 								</div>
@@ -151,30 +143,53 @@
 					<div class="throbber"></div>
 				</div>
 				
-				<div id="facebook-dialog" class="dialog-content">
-					<h2>Connect your playlist to a facebook event</h2>
-					<p>Your events:</p>
-					<div id="events-result">
-						<ul>
-							<!--
-								fbUserEvents();
-							-->
-						</ul>
+				<div id="settings-dialog" class="dialog-content">
+					<h2>Settings</h2>
+					
+					{{#admin}}
+					<div class="access-settings setting fs-settings">
+						<h3>Access<i class="icon-info-sign"></i></h3>
+						<div class="info">Do you want this playlist to be publicly available so everyone can participate? You'll still be the admin.</div>
+						<div class="message"></div>
+						<form id="access">
+							<fieldset form="access">
+								<input id="publicInvite" type="checkbox" name="invite" value="public" /><label for="publicInvite">Public</label>
+							</fieldset>
+							<a id="access-confirm" class="action">Save</a>
+						</form>
 					</div>
-					<!-- <a id="facebook-confirm" class="small awesome">Connect</a> -->
-					<div class="throbber"></div>
+					<div class="fb-settings setting fs-settings">
+						<h3>Facebook<i class="icon-info-sign"></i></h3>
+						<div class="info">Connect your playlist to a facebook event.</div>
+						<div class="message"></div>
+						<form id="facebook">
+							
+						</form>
+					</div>
+					<div class="remove setting fs-settings">
+						<h3>Delete playlist<i class="icon-info-sign"></i></h3>
+						<div class="info">Are you sure you want to delete this playlist? The playlist and all of its items will be deleted forever.</div>
+						<div class="message"></div>
+						<button id="remove-button" class="action">Delete</button><br />
+					</div>
+					{{/admin}}
+					{{^admin}}
+					<div class="access-settings setting fs-settings">
+						<h3>Access</h3>
+						<p></p>
+					</div>
+					<div class="fb-settings setting fs-settings">
+						<h3>Facebook</h3>
+						<p></p>
+					</div>
+					{{/admin}}
+					
 				</div>
 				
 				<div id="invite-dialog" class="dialog-content">
 					<h2>Invite others to your playlist</h2>
 					<label for="emailInvite">Invite someone by email</label><input type="text" name="email" id="emailInvite" /><br />
 					<a id="dialog-button" class="small awesome">Invite</a>
-				</div>
-				
-				<div id="settings-dialog" class="dialog-content">
-					<h2>Settings</h2>
-					<input id="publicInvite" type="checkbox" name="invite" value="public" /><label for="publicInvite">Public</label><br />
-					<button id="remove-button">Delete playlist</button><br />
 				</div>
 				
 			</div>
